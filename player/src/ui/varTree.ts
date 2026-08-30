@@ -5,10 +5,17 @@
  * (arrays / plain objects) collapse by default to a one-line summary and
  * expand on click. Expansion state is keyed by a stable value-path so it
  * survives stepping across frames (the user's open nodes stay open).
+ *
+ * Phase 3 addition: `renderDiff` paints two anchored snapshots side by side
+ * with per-node colouring (added/removed/modified/unchanged) and inline
+ * before → after for modified leaves.
  */
 import type { TraceVar } from "../types";
+import { diffVars, type VarDiff } from "../analysis";
 
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+
+export type DiffLabels = { aLabel: string; bLabel: string } | null;
 
 export class VarTree {
   private readonly host: HTMLElement;
@@ -30,6 +37,37 @@ export class VarTree {
     }
     const frag = document.createDocumentFragment();
     for (const v of vars) frag.append(this.renderVar(v.name, v.value, v.type, v.name));
+    this.host.append(frag);
+  }
+
+  /**
+   * Render a two-snapshot diff view.
+   *
+   * `labels == null` falls back to normal `render(varsAfter)` (main glue does
+   * this when at least one anchor hasn't been set yet). Otherwise the host
+   * renders a mode banner and then the diff-coloured tree.
+   *
+   * Expanded paths remain stable because the same `expanded` set is reused.
+   */
+  renderDiff(varsBefore: TraceVar[], varsAfter: TraceVar[], labels: DiffLabels): void {
+    if (!labels) { this.render(varsAfter); return; }
+    this.host.replaceChildren();
+
+    const banner = document.createElement("div");
+    banner.className = "diff-banner";
+    banner.innerHTML =
+      `<span class="diff-banner-title">Variable Diff — ${labels.aLabel} → ${labels.bLabel}</span>` +
+      `<span class="diff-legend">` +
+        `<i class="dot added"></i>added ` +
+        `<i class="dot removed"></i>removed ` +
+        `<i class="dot modified"></i>modified ` +
+        `<i class="dot unchanged"></i>unchanged` +
+      `</span>`;
+    this.host.append(banner);
+
+    const diffs = diffVars(varsBefore, varsAfter);
+    const frag = document.createDocumentFragment();
+    for (const d of diffs) frag.append(this.renderDiffNode(d, d.name));
     this.host.append(frag);
   }
 
@@ -146,5 +184,100 @@ export class VarTree {
       return out;
     }
     return String(v);
+  }
+
+  // -------------------------------------------------------------------------
+  // Diff rendering
+  // -------------------------------------------------------------------------
+
+  private renderDiffNode(d: VarDiff, path: string): HTMLElement {
+    const row = document.createElement("div");
+    row.className = `var-row diff diff-${d.kind}`;
+
+    const isCompound = Array.isArray(d.children) && d.children.length > 0;
+    const isOpen = this.expanded.has(path);
+
+    const toggle = document.createElement("span");
+    toggle.className = "var-toggle";
+    toggle.textContent = isCompound ? (isOpen ? "▾" : "▸") : "";
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "var-name";
+    nameEl.textContent = d.name;
+
+    const eq = document.createElement("span");
+    eq.className = "var-eq";
+
+    row.append(toggle, nameEl, eq);
+
+    if (isCompound) {
+      eq.textContent = "=";
+      const beforeLen = d.before ? (Array.isArray(d.before) ? d.before.length : Object.keys(d.before as object).length) : 0;
+      const afterLen = d.after ? (Array.isArray(d.after) ? d.after.length : Object.keys(d.after as object).length) : 0;
+      const typeLabel = Array.isArray(d.after ?? d.before) ? "list" : "dict";
+      const summary = document.createElement("span");
+      summary.className = "var-type";
+      const changed = beforeLen !== afterLen;
+      summary.textContent = !isOpen
+        ? changed ? `${typeLabel}[${beforeLen}→${afterLen}]` : `${typeLabel}[${afterLen}]`
+        : (typeLabel === "list" ? "[" : "{");
+      row.append(summary);
+      if (isOpen) {
+        const child = document.createElement("div");
+        child.style.marginLeft = "16px";
+        for (const c of d.children ?? []) child.append(this.renderDiffNode(c, `${path}.${c.name}`));
+        row.append(child);
+      }
+      row.classList.add("expandable");
+      row.addEventListener("click", (e) => {
+        if (e.target instanceof HTMLElement && e.target.closest(".var-row") !== row) return;
+        e.stopPropagation();
+        if (this.expanded.has(path)) this.expanded.delete(path);
+        else this.expanded.add(path);
+        const fresh = this.renderDiffNode(d, path);
+        row.replaceWith(fresh);
+      });
+      return row;
+    }
+
+    // Leaf: render kind-specific shape.
+    switch (d.kind) {
+      case "added":
+        eq.textContent = "=";
+        row.append(this.renderLeaf(d.after, "added"));
+        break;
+      case "removed":
+        eq.textContent = "=";
+        row.append(this.renderLeaf(d.before, "removed"));
+        break;
+      case "modified":
+        eq.textContent = ":";
+        row.append(this.renderLeaf(d.before, "removed"));
+        const arrow = document.createElement("span");
+        arrow.className = "diff-arrow";
+        arrow.textContent = " → ";
+        row.append(arrow);
+        row.append(this.renderLeaf(d.after, "added"));
+        break;
+      case "unchanged":
+        eq.textContent = "=";
+        row.append(this.renderLeaf(d.before ?? d.after, "unchanged"));
+        break;
+    }
+    return row;
+  }
+
+  private renderLeaf(value: unknown, tone: "added" | "removed" | "unchanged"): HTMLElement {
+    const el = document.createElement("span");
+    el.className = `var-value diff-leaf diff-leaf-${tone}`;
+    const json = this.toJson(value);
+    if (json === null) { el.classList.add("null"); el.textContent = "None"; return el; }
+    if (typeof json === "string") { el.classList.add("str"); el.textContent = JSON.stringify(json); return el; }
+    if (typeof json === "number" || typeof json === "boolean") {
+      el.classList.add("num"); el.textContent = String(json); return el;
+    }
+    // Shouldn't happen because compounds go through isCompound path.
+    el.textContent = JSON.stringify(json);
+    return el;
   }
 }

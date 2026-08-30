@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "noEmit": false,
+    "outDir": "./dist-test",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["node"]
+  },
+  "include": ["src/analysis.ts", "src/types.ts", "scripts/test_analysis.ts"]
+}

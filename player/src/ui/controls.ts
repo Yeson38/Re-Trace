@@ -1,13 +1,24 @@
 /**
- * Transport controls + loop inspector.
+ * Transport controls + loop inspector + Mark A/B + complexity badges.
  *
  * Wires the prev / next / play / pause / restart buttons, the timeline slider,
  * and the speed selector to the Player. Also renders the active-loop counters
  * returned by each TraceStep. `sync` is called by the main loop on every
  * state change to reflect the cursor position back into the controls.
+ *
+ * Phase 3 additions:
+ *   - Mark A / Mark B buttons to set the two diff anchors. Pressing either
+ *     emits the supplied callback so the main glue can track anchors and
+ *     switch the variables pane into Diff mode.
+ *   - Per-loop complexity badges rendered next to the progress bar. Clicking
+ *     a badge opens a small inline tooltip showing the estimate's basis.
+ *   - `overallOrderPill()` helper returns an `HTMLElement` suitable for a
+ *     topbar chip showing the program-level asymptotic estimate.
  */
 import type { Player, PlayerState } from "../player";
 import type { TraceLoop } from "../types";
+import { estimateLoopComplexity, estimateProgram, type ComplexityEstimate } from "../analysis";
+import type { TraceFile } from "../types";
 
 const SPEEDS: { label: string; ms: number }[] = [
   { label: "0.25×", ms: 1600 },
@@ -17,8 +28,12 @@ const SPEEDS: { label: string; ms: number }[] = [
   { label: "4×", ms: 150 },
 ];
 
+export type MarkHandler = (currentStepIndex: number) => void;
+export type ClearMarkHandler = () => void;
+
 export class Controls {
   private readonly player: Player;
+  private readonly file: TraceFile;
   private readonly loopsHost: HTMLElement;
   private readonly slider: HTMLInputElement;
   private readonly playBtn: HTMLButtonElement;
@@ -27,10 +42,26 @@ export class Controls {
   private readonly restartBtn: HTMLButtonElement;
   private readonly speedSel: HTMLSelectElement;
   private readonly stepLabel: HTMLElement;
+  private readonly markABtn: HTMLButtonElement;
+  private readonly markBBtn: HTMLButtonElement;
+  private readonly clearMarkBtn: HTMLButtonElement;
+  private readonly onMarkA: MarkHandler;
+  private readonly onMarkB: MarkHandler;
+  private readonly onClearMarks: ClearMarkHandler;
 
-  constructor(host: HTMLElement, loopsHost: HTMLElement, player: Player) {
+  constructor(
+    host: HTMLElement,
+    loopsHost: HTMLElement,
+    player: Player,
+    file: TraceFile,
+    handlers: { onMarkA?: MarkHandler; onMarkB?: MarkHandler; onClearMarks?: ClearMarkHandler } = {},
+  ) {
     this.player = player;
+    this.file = file;
     this.loopsHost = loopsHost;
+    this.onMarkA = handlers.onMarkA ?? (() => {});
+    this.onMarkB = handlers.onMarkB ?? (() => {});
+    this.onClearMarks = handlers.onClearMarks ?? (() => {});
 
     host.replaceChildren();
 
@@ -71,6 +102,23 @@ export class Controls {
       this.player.setSpeed(Number(this.speedSel.value));
     });
 
+    const divider1 = document.createElement("span");
+    divider1.className = "transport-sep";
+    divider1.setAttribute("aria-hidden", "true");
+
+    this.markABtn = this.btn("◉ Mark A", "Anchor first time-point for variable diff (A)",
+      () => this.onMarkA(player.getState().index));
+    this.markABtn.classList.add("mark-btn", "mark-a");
+
+    this.markBBtn = this.btn("◉ Mark B", "Anchor second time-point for variable diff (B)",
+      () => this.onMarkB(player.getState().index));
+    this.markBBtn.classList.add("mark-btn", "mark-b");
+
+    this.clearMarkBtn = this.btn("✕ Clear", "Clear diff anchors and return to live variables",
+      () => this.onClearMarks());
+    this.clearMarkBtn.classList.add("mark-btn", "mark-clear");
+    this.clearMarkBtn.disabled = true;
+
     host.append(
       this.restartBtn,
       this.prevBtn,
@@ -80,7 +128,50 @@ export class Controls {
       this.slider,
       this.stepLabel,
       this.speedSel,
+      divider1,
+      this.markABtn,
+      this.markBBtn,
+      this.clearMarkBtn,
     );
+  }
+
+  /** Update the Mark A/B buttons to reflect the currently set anchor indices. */
+  setMarks(a: number | null, b: number | null): void {
+    if (a === null) {
+      this.markABtn.classList.remove("set");
+      this.markABtn.textContent = "◉ Mark A";
+    } else {
+      this.markABtn.classList.add("set");
+      this.markABtn.textContent = `◉ A = #${a + 1}`;
+    }
+    if (b === null) {
+      this.markBBtn.classList.remove("set");
+      this.markBBtn.textContent = "◉ Mark B";
+    } else {
+      this.markBBtn.classList.add("set");
+      this.markBBtn.textContent = `◉ B = #${b + 1}`;
+    }
+    this.clearMarkBtn.disabled = a === null && b === null;
+  }
+
+  /** Build a standalone chip showing the overall program complexity order. */
+  overallOrderPill(): HTMLElement {
+    const est = estimateProgram(this.file);
+    const pill = document.createElement("span");
+    pill.className = "complexity-pill";
+    pill.title = `Overall estimate · ${est.basis}`;
+    pill.dataset.order = est.order;
+    pill.textContent = est.order;
+    pill.addEventListener("click", () => {
+      // Toggle a small tooltip under the pill.
+      let tip = pill.querySelector<HTMLElement>(".complexity-tip");
+      if (tip) { tip.remove(); return; }
+      tip = document.createElement("span");
+      tip.className = "complexity-tip";
+      tip.textContent = est.basis;
+      pill.append(tip);
+    });
+    return pill;
   }
 
   private btn(label: string, title: string, onClick: () => void): HTMLButtonElement {
@@ -138,9 +229,33 @@ export class Controls {
       txt.className = "loop-text";
       txt.textContent = `${loop.current} / ${loop.total}`;
 
-      row.append(id, bar, txt);
+      // Phase 3: complexity badge (per loop). Click toggles basis tooltip.
+      const badge = this.loopBadge(loop.id);
+
+      row.append(id, bar, txt, badge);
       frag.append(row);
     }
     this.loopsHost.append(frag);
+  }
+
+  private loopBadge(loopId: string): HTMLElement {
+    let est: ComplexityEstimate;
+    try { est = estimateLoopComplexity(this.file, loopId); }
+    catch { est = { order: "O(?)", basis: "estimate failed", confidence: "low" }; }
+    const el = document.createElement("span");
+    el.className = "loop-cpx";
+    el.title = "Click for estimate basis";
+    el.dataset.confidence = est.confidence;
+    el.textContent = est.order;
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      let tip = el.querySelector<HTMLElement>(".loop-cpx-tip");
+      if (tip) { tip.remove(); return; }
+      tip = document.createElement("span");
+      tip.className = "loop-cpx-tip";
+      tip.textContent = est.basis;
+      el.append(tip);
+    });
+    return el;
   }
 }
