@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Re-Trace Player</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">Re-Trace</span>
+        <span class="brand-sub" id="sourceName">—</span>
+      </div>
+      <div class="counters">
+        <span class="counter"><em>Step</em><b id="stepCounter">0 / 0</b></span>
+        <span class="counter"><em>Global</em><b id="globalStep">0</b></span>
+        <span class="counter"><em>Depth</em><b id="depthCounter">0</b></span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <section class="pane pane-code" aria-label="Source code">
+        <div class="pane-title">Source</div>
+        <div class="code-scroll" id="code"></div>
+      </section>
+
+      <section class="pane pane-inspector" aria-label="Inspector">
+        <div class="pane-block">
+          <div class="pane-title">Variables</div>
+          <div class="tree" id="vars"></div>
+        </div>
+        <div class="pane-block">
+          <div class="pane-title">Loops</div>
+          <div class="loops" id="loops"></div>
+        </div>
+        <div class="pane-block pane-terminal">
+          <div class="pane-title">Output</div>
+          <pre class="terminal" id="terminal" aria-live="polite"></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer class="transport" id="controls"></footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
