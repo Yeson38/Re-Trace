@@ -1,0 +1,157 @@
+{
+  "source": {
+    "name": "factorial.cpp",
+    "language": "cpp",
+    "lines": [
+      "#include \"retrace.h\"",
+      "#include <iostream>",
+      "",
+      "long long fact(int n) {",
+      "  __RT_FN;",
+      "  __RT_PARAM(n);",
+      "  if (n <= 1) return 1;",
+      "  return (long long)n * fact(n - 1);",
+      "}",
+      "",
+      "int main() {",
+      "  __RT_MAIN(\"factorial.trace.json\");",
+      "  std::cout << fact(4) << std::endl;",
+      "  return 0;",
+      "}"
+    ]
+  },
+  "steps": [
+    {
+      "line": 12,
+      "depth": 1,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 0
+    },
+    {
+      "line": 13,
+      "depth": 1,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 1
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 2
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 3
+    },
+    {
+      "line": 7,
+      "depth": 2,
+      "vars": [
+        {"name": "n", "value": 4, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 4
+    },
+    {
+      "line": 5,
+      "depth": 3,
+      "vars": [
+        {"name": "n", "value": 4, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 5
+    },
+    {
+      "line": 6,
+      "depth": 3,
+      "vars": [
+        {"name": "n", "value": 4, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 6
+    },
+    {
+      "line": 7,
+      "depth": 3,
+      "vars": [
+        {"name": "n", "value": 3, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 7
+    },
+    {
+      "line": 5,
+      "depth": 4,
+      "vars": [
+        {"name": "n", "value": 3, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 8
+    },
+    {
+      "line": 6,
+      "depth": 4,
+      "vars": [
+        {"name": "n", "value": 3, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 9
+    },
+    {
+      "line": 7,
+      "depth": 4,
+      "vars": [
+        {"name": "n", "value": 2, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 10
+    },
+    {
+      "line": 5,
+      "depth": 5,
+      "vars": [
+        {"name": "n", "value": 2, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 11
+    },
+    {
+      "line": 6,
+      "depth": 5,
+      "vars": [
+        {"name": "n", "value": 2, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 12
+    },
+    {
+      "line": 7,
+      "depth": 5,
+      "vars": [
+        {"name": "n", "value": 1, "type": "int"}
+      ],
+      "loops": [],
+      "output": "24\n",
+      "globalStep": 13
+    }
+  ]
+}
