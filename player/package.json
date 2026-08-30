@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "gen:demo": "node scripts/gen_bubble.mjs"
+    "gen:demo": "python3 ../adapters/python/instrument.py ../adapters/python/samples/bubble_sort.py -o public/samples/bubble_sort.json"
   },
   "devDependencies": {
     "typescript": "^5.4.5",

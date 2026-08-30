@@ -1,0 +1,151 @@
+{
+  "source": {
+    "name": "gcd_while.py",
+    "language": "python",
+    "lines": [
+      "def gcd(a, b):",
+      "    while b != 0:",
+      "        a, b = b, a % b",
+      "    return a",
+      "",
+      "print(gcd(48, 18))"
+    ]
+  },
+  "steps": [
+    {
+      "line": 1,
+      "depth": 1,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 0
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {
+          "name": "gcd",
+          "value": "<function gcd at 0x7f118a1e2cf0>",
+          "type": "function"
+        }
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 1
+    },
+    {
+      "line": 2,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "a",
+          "value": 48,
+          "type": "int"
+        },
+        {
+          "name": "b",
+          "value": 18,
+          "type": "int"
+        }
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 2
+    },
+    {
+      "line": 3,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "a",
+          "value": 48,
+          "type": "int"
+        },
+        {
+          "name": "b",
+          "value": 18,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L2",
+          "current": 0,
+          "total": 1
+        }
+      ],
+      "output": "",
+      "globalStep": 3
+    },
+    {
+      "line": 3,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "a",
+          "value": 18,
+          "type": "int"
+        },
+        {
+          "name": "b",
+          "value": 12,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L2",
+          "current": 1,
+          "total": 2
+        }
+      ],
+      "output": "",
+      "globalStep": 4
+    },
+    {
+      "line": 3,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "a",
+          "value": 12,
+          "type": "int"
+        },
+        {
+          "name": "b",
+          "value": 6,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L2",
+          "current": 2,
+          "total": 3
+        }
+      ],
+      "output": "",
+      "globalStep": 5
+    },
+    {
+      "line": 4,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "a",
+          "value": 6,
+          "type": "int"
+        },
+        {
+          "name": "b",
+          "value": 0,
+          "type": "int"
+        }
+      ],
+      "loops": [],
+      "output": "6\n",
+      "globalStep": 6
+    }
+  ]
+}
