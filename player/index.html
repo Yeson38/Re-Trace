@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
+    <!-- Phase 4: Top bar (file ops + language + record) -->
+    <div id="topBar" class="rt-topbar"></div>
+
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark">Re-Trace</span>
@@ -26,8 +29,11 @@
 
     <main class="stage">
       <section class="pane pane-code" aria-label="Source code">
-        <div class="pane-title">Source</div>
-        <div class="code-scroll" id="code"></div>
+        <div class="pane-title" id="editorHeader">Source</div>
+        <!-- Phase 4: Monaco editor replaces read-only CodeView -->
+        <div class="code-scroll" id="editorHost" style="height:100%;"></div>
+        <!-- Phase 0-3: CodeView fallback (hidden, kept for compat) -->
+        <div class="code-scroll" id="code" style="display:none;"></div>
       </section>
 
       <section class="pane pane-inspector" aria-label="Inspector">

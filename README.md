@@ -9,7 +9,7 @@
 | **Phase 1** | Python 插桩适配器：AST 重写源码，生成 `trace.json` 时间线 | ✅ |
 | **Phase 2** | C++ 插桩适配器：正则插桩 + `retrace.h` 运行时 | ✅ |
 | **Phase 3** | 高级调试特性：时间线搜索、循环复杂度估算、双时间点变量 Diff | ✅ |
-| **Phase 4** | 编辑器内编辑（TODO） | ⏳ |
+| **Phase 4** | 多端分发：Monaco 编辑器 + 录制服务 + GitHub Pages + Tauri 桌面 | ✅ |
 
 ## 本地运行（播放器）
 
@@ -123,6 +123,42 @@ interface TraceStep {
 | `F3` | 下一个命中（循环） | 搜索框聚焦 |
 | `Esc` | 清空查询并失焦 | 搜索框聚焦 |
 
-## 后续（Phase 4 · 计划）
+## Phase 4 · 多端分发
 
-只读视图 → 可编辑代码框 → 保存改动后重新跑适配器生成新 trace，形成「改 → 录 → 回放」闭环。
+> **两条分发路径**（两端共用同一套 Player UI + 录制抽象层 `IRecorderService`）：
+>
+> 1. **Web 端（GitHub Pages）** — 纯浏览器可访问，无需安装。
+>    - Python 录制：首次 `loadPyodide` 从 CDN 加载 CPython WASM（~25 MB），后续录制 < 1s 冷启动。
+>    - C++ 录制：首次下载 clang-17 WASI 包（~100 MB，强缓存后永久可用）；插桩仍然复用 Pyodide 执行 adapters/cpp/instrument.py，编译走浏览器内 clang，执行通过 WebAssembly + retrace.h 的 `__WASM__` 分支回调 trace 回 JS。
+> 2. **桌面端（Tauri 安装包 deb/AppImage/dmg/nsis）** — 调用本机 `python3` + `g++`，录制速度与桌面脚本一致。如果 `apt install` 后仍然缺工具链，Hybrid 模式自动**回退**到浏览器实现（Pyodide + clangWASM），保证功能永远可用。
+
+### 能力矩阵
+
+| 特性 | Web（GH Pages） | Tauri 桌面（默认） | Tauri 桌面（缺工具链，Hybrid 回退） |
+| --- | --- | --- | --- |
+| Python 录制 | ✅ Pyodide | ✅ 本机 python3 | ✅ Pyodide 自动回退 |
+| C++ 录制 | ✅ Pyodide+clangWASM | ✅ 本机 g++ | ✅ clangWASM 自动回退 |
+| 离线可用 | 需要一次下载 CDN + clang 缓存 | ✅ 完全离线 | ✅（clangWASM 已缓存时离线） |
+| 编辑/Import/Export | ✅ | ✅ | ✅ |
+| 调试特性（Phase 3） | ✅ | ✅ | ✅ |
+
+### 开发者：构建 / 发布命令
+
+```bash
+# Player 单测（factories + browser pure helpers + native stub）
+cd player && npm run test:services
+
+# Typecheck + build + 全部单元测试
+cd player && npm run typecheck && npm run test && npm run build
+
+# Tauri dev 热更新（需要本地 Rust 1.77+ + python3 + g++）
+cd player && npm run dev:tauri
+
+# Tauri 打包（生成 src-tauri/target/release/bundle/*）
+cd player && npm run build:tauri -- --bundles deb,appimage
+
+# GH Pages 部署自动发生在每次 push main；
+# 桌面版 Release 自动发生在每次打 tag vX.Y.Z（见 .github/workflows/）
+git tag -a v0.1.0 -m "Phase 4 release"
+git push origin v0.1.0
+```

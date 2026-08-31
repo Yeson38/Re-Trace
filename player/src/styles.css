@@ -418,3 +418,142 @@ body {
 @media (max-width: 760px) {
   .stage { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
 }
+
+/* ===== Phase 4 styles ===== */
+
+/* Top bar */
+.rt-topbar { flex: 0 0 auto; }
+
+/* Monaco editor fills the code pane */
+#editorHost {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+#editorHost .monaco-editor,
+#editorHost .monaco-editor-background,
+#editorHost .monaco-editor .overflow-guard {
+  background: var(--bg) !important;
+}
+
+/* Monaco decoration classes */
+.rt-current-line {
+  background: var(--current-line) !important;
+  border-left: 3px solid var(--accent) !important;
+}
+.rt-mark-a {
+  background: rgba(255, 180, 84, 0.12) !important;
+}
+.rt-mark-b {
+  background: rgba(90, 209, 127, 0.12) !important;
+}
+.rt-glyph-error {
+  background: var(--err);
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+}
+.rt-glyph-warning {
+  background: var(--warn);
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+}
+.rt-glyph-mark-a {
+  background: var(--warn);
+  border-radius: 2px;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+}
+.rt-glyph-mark-b {
+  background: var(--ok);
+  border-radius: 2px;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+}
+.rt-line-error {
+  background: rgba(255, 107, 107, 0.08) !important;
+}
+.rt-line-warning {
+  background: rgba(255, 180, 84, 0.08) !important;
+}
+
+/* Editor header (filename + encoding chip) */
+#editorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.rt-filename {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.rt-filename-dirty::after {
+  content: " ●";
+  color: var(--warn);
+}
+
+/* Buttons */
+.rt-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--sans);
+  transition: background 0.15s, border-color 0.15s;
+}
+.rt-btn:hover {
+  background: var(--bg);
+  border-color: var(--accent);
+}
+.rt-btn-primary {
+  background: var(--accent) !important;
+  color: #fff !important;
+  font-weight: 600;
+  border: none !important;
+}
+
+/* Capability chip */
+.rt-cap-chip {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Toast stack */
+.rt-toast-stack {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2147483000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  pointer-events: none;
+}
+.rt-toast {
+  pointer-events: auto;
+  cursor: pointer;
+  max-width: 420px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font: 13px/1.5 var(--sans);
+  color: var(--text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.2s, transform 0.2s;
+}

@@ -17,5 +17,14 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["node"]
   },
-  "include": ["src/analysis.ts", "src/types.ts", "scripts/test_analysis.ts"]
+  "include": [
+    "src/types.ts",
+    "src/analysis.ts",
+    "src/services/types.ts",
+    "src/services/factories.ts",
+    "src/services/browserHelpers.ts",
+    "src/services/native.ts",
+    "scripts/test_analysis.ts",
+    "scripts/test_services.ts"
+  ]
 }

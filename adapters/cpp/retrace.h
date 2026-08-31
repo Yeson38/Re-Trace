@@ -24,6 +24,17 @@
 #ifndef RETRACE_H_
 #define RETRACE_H_
 
+// =======================================================
+// Phase 4: Browser / WASM build path — trace flushed via JS callback.
+// Desktop Tauri (native g++) keeps writing to disk (Phase 2 compat).
+// =======================================================
+#if defined(__EMSCRIPTEN__) || defined(__WASM__)
+#  include <emscripten.h>
+#  define RETRACE_WASM_BUILD 1
+#else
+#  define RETRACE_WASM_BUILD 0
+#endif
+
 #include <any>
 #include <cstdio>
 #include <cstdlib>
@@ -404,8 +415,22 @@ class Recorder {
             steps_.back().output += pending;
         }
 
-        // Determine output path relative to CWD. If the user path is not
-        // absolute, place it next to the binary: use fs current_path / path.
+#if RETRACE_WASM_BUILD
+        // Browser: emit JSON string via JS callback. Routes to
+        // BrowserRecorderService window.__retrace_emit listener.
+        std::ostringstream oss;
+        write_json(oss);
+        std::string json = oss.str();
+        EM_ASM_INT({
+            const char* s = reinterpret_cast<const char*>($0);
+            if (typeof window !== 'undefined' && typeof window.__retrace_emit === 'function') {
+                window.__retrace_emit(UTF8ToString(s));
+            } else if (typeof window !== 'undefined') {
+                window.__retrace_last = UTF8ToString(s);
+            }
+        }, json.c_str());
+#else
+        // Desktop / original Phase 2 disk-write path.
         fs::path p = output_path_;
         if (!p.is_absolute()) p = fs::current_path() / p;
         std::error_code ec;
@@ -417,6 +442,7 @@ class Recorder {
             return;
         }
         write_json(f);
+#endif
     }
 
   private:
@@ -522,6 +548,10 @@ struct BootstrapGuard {
     }
     ~BootstrapGuard() {
         Recorder::instance().pop_scope();
+#if RETRACE_WASM_BUILD
+        // On WASM, atexit doesn't reliably fire — flush explicitly.
+        Recorder::instance().flush_to_disk();
+#endif
     }
 };
 
