@@ -158,6 +158,12 @@ async function main(): Promise<void> {
   // =================================================================
   let recorder: IRecorderService | null = null;
   let topbar: TopBarWidget | null = null;
+
+  // Debug hook for E2E/browser tests (harmless in production).
+  Object.defineProperty(window, "__retrace", {
+    configurable: true,
+    get: () => ({ recorder, monaco, topbar, doRecord }),
+  });
   let currentEditorFilename = "bubble_sort.py";
 
   async function bootstrapPhase4(): Promise<void> {
@@ -168,6 +174,23 @@ async function main(): Promise<void> {
     monacoReady = true;
     monaco.setLanguage("python");
     monaco.setValue(PYTHON_BUBBLE, { markClean: true, language: "python" });
+
+    // 3. Editor header (declared before first use to avoid TDZ on `header`)
+    const header = el("editorHeader");
+    function renderEditorHeader(): void {
+      if (!monaco || !header) return;
+      header.innerHTML = "";
+      const left = document.createElement("div");
+      left.className = "rt-filename";
+      left.textContent = currentEditorFilename;
+      if (monaco.isDirty()) left.classList.add("rt-filename-dirty");
+      header.appendChild(left);
+      const right = document.createElement("div");
+      right.style.cssText = "display:inline-flex;align-items:center;gap:8px;";
+      const lg = monaco.getLanguage();
+      right.innerHTML = `<span class="rt-cap-chip">${lg === "python" ? "Python · UTF-8" : "C++ · UTF-8"}</span>`;
+      header.appendChild(right);
+    }
 
     // Render header
     renderEditorHeader();
@@ -227,22 +250,6 @@ async function main(): Promise<void> {
       },
     });
 
-    // 3. Editor header
-    const header = el("editorHeader");
-    function renderEditorHeader(): void {
-      if (!monaco || !header) return;
-      header.innerHTML = "";
-      const left = document.createElement("div");
-      left.className = "rt-filename";
-      left.textContent = currentEditorFilename;
-      if (monaco.isDirty()) left.classList.add("rt-filename-dirty");
-      header.appendChild(left);
-      const right = document.createElement("div");
-      right.style.cssText = "display:inline-flex;align-items:center;gap:8px;";
-      const lg = monaco.getLanguage();
-      right.innerHTML = `<span class="rt-cap-chip">${lg === "python" ? "Python · UTF-8" : "C++ · UTF-8"}</span>`;
-      header.appendChild(right);
-    }
     monaco.setDirtyChangeHandler(() => renderEditorHeader());
 
     // 4. Init recorder

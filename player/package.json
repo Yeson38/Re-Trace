@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "dev:tauri": "tauri dev",
-    "build": "vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=6144 vite build",
     "build:tauri": "tauri build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4",
     "@types/node": "^20.19.43",
+    "puppeteer-core": "^25.10.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",
     "vite-plugin-monaco-editor": "^1.1.0"

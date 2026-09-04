@@ -25,13 +25,8 @@ export default defineConfig({
     }),
   ] as any,
   optimizeDeps: {
-    exclude: ["https://cdn.jsdelivr.net"],
-  },
-  build: {
-    rollupOptions: {
-      // Wasmer SDK packages are optional peer deps for browser C++ recording.
-      // They're loaded at runtime; don't try to bundle them.
-      external: ["@wasmer/wasi", "@wasmer/wasmfs"],
-    },
+    // Wasmer SDK and other optional runtime deps are fetched from CDN via
+    // dynamic import(); keep vite's pre-bundler from trying to resolve them.
+    exclude: [],
   },
 });

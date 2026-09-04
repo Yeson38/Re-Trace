@@ -137,15 +137,24 @@ export class BrowserRecorderService implements IRecorderService {
       const maxSteps = opts.maxSteps ?? 10000;
       const pyCode = `
 import sys, json
-sys.argv = ['instrument.py', '/retrace/source.py', '-o', '/retrace/trace.json', '--max-steps', ${maxSteps}]
+sys.argv = ['instrument.py', '/retrace/source.py', '-o', '/retrace/trace.json', '--max-steps', '${maxSteps}']
 exec(open('/retrace/instrument.py').read())
 `;
-      await pyodide.runPythonAsync(pyCode);
+      // instrument.py may call sys.exit(0) on success; Pyodide surfaces that
+      // as a Python exception. Treat SystemExit(0) as normal completion.
+      try {
+        await pyodide.runPythonAsync(pyCode);
+      } catch (e) {
+        const msg = String(e);
+        if (!msg.includes("SystemExit") && !/SystemExit: 0/.test(msg)) {
+          throw e;
+        }
+      }
 
-      // Read back the trace
-      const traceBytes = pyodide.FS.readFile("/retrace/trace.json", {
-        encoding: "utf-8",
-      });
+      // Read back the trace (Pyodide FS.readFile returns Uint8Array)
+      const traceBytes = pyodide.FS.readFile("/retrace/trace.json") as
+        | Uint8Array
+        | string;
       const traceStr =
         typeof traceBytes === "string"
           ? traceBytes
@@ -205,15 +214,22 @@ exec(open('/retrace/instrument.py').read())
       // Run the C++ instrument adapter to produce instrumented source
       const instPy = `
 import sys
-sys.argv = ['instrument.py', '/retrace_cpp/source.cpp', '-o', '/retrace_cpp/source_inst.cpp', '--retrace-header', '/retrace_cpp/retrace.h']
+sys.argv = ['instrument.py', '/retrace_cpp/source.cpp', '-o', '/retrace_cpp/source_inst.cpp']
 exec(open('/retrace_cpp/instrument.py').read())
 `;
-      await pyodide.runPythonAsync(instPy);
+      // instrument.py may call sys.exit(0); treat as normal completion.
+      try {
+        await pyodide.runPythonAsync(instPy);
+      } catch (e) {
+        const msg = String(e);
+        if (!msg.includes("SystemExit") && !/SystemExit: 0/.test(msg)) {
+          throw e;
+        }
+      }
 
       const instBytes = pyodide.FS.readFile(
-        "/retrace_cpp/source_inst.cpp",
-        { encoding: "utf-8" }
-      );
+        "/retrace_cpp/source_inst.cpp"
+      ) as Uint8Array | string;
       const instrumentedSource =
         typeof instBytes === "string"
           ? instBytes
@@ -248,7 +264,14 @@ exec(open('/retrace_cpp/instrument.py').read())
         runMs,
       });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      // Debug: surface the raw error shape (some SDK errors are plain objects)
+      console.error("[retrace/cpp] raw error:", e);
+      const msg =
+        e instanceof Error
+          ? e.message
+          : typeof e === "string"
+            ? e
+            : (e as any)?.message ?? JSON.stringify(e);
       const diags = parseGccDiagnostics(msg);
       return makeError({
         lang: "cpp",
@@ -260,52 +283,47 @@ exec(open('/retrace_cpp/instrument.py').read())
   }
 
   /**
-   * Run clang-17 WASM to compile + execute the instrumented C++ source.
-   * This is a simplified implementation that uses the Wasmer JS SDK
-   * to instantiate clang.wasm and pipe source through it.
+   * Compile + execute the instrumented C++ source in the browser.
    *
-   * In production, this downloads clang.wasm + lld.wasm from public/assets/wasm/
-   * (staged by download_clang_wasm.ts script or CI).
+   * Uses the modern Wasmer JS SDK (`@wasmer/sdk`) and pulls the `clang/clang`
+   * package from the Wasmer registry on first use (~100 MB, cached by the
+   * browser). No local `clang.wasm` file is required.
+   *
+   * Pipeline:
+   *   1. Write instrumented source + retrace.h into a virtual Directory.
+   *   2. `clang` (wasm32-wasi) compiles `/source.cpp` → `/program.wasm`.
+   *   3. Run `/program.wasm`; retrace.h's `__WASM__` branch writes trace.json
+   *      into the same virtual filesystem.
+   *   4. Read `trace.json` back from the virtual Directory and return it.
    */
   private async runClangWasi(instrumentedSource: string): Promise<string> {
-    // Try to use the Wasmer JS SDK if available
-    // Fall back to window.__retrace_last polling
-
-    // Set up the trace emission callback
     let traceJson = "";
     const emitCb = (s: string) => {
       traceJson = s;
     };
     (window as any).__retrace_emit = emitCb;
 
-    // Write source to a virtual FS for clang WASM
-    // This requires the Wasmer JS SDK (@wasmer/wasi + @wasmer/wasmfs)
-    // For now, we use a simplified approach:
-    // 1. Try dynamic import of wasmer SDK
-    // 2. If unavailable, throw a clear error
-
     try {
-      // Dynamic import from CDN (esm.sh) — avoids bundling the heavy Wasmer
-      // SDK and lets both `vite dev` and `vite build` start without the npm
-      // packages installed. Browser fetches them on-demand at record time.
-      const WASI = (await import(
-        /* @vite-ignore */ "https://esm.sh/@wasmer/wasi@1.2.2"
-      )).default;
-      const WasmFs = (await import(
-        /* @vite-ignore */ "https://esm.sh/@wasmer/wasmfs@1.0.2"
-      )).default;
+      // Dynamic import from CDN — avoids bundling the heavy Wasmer SDK.
+      // jsdelivr serves the prebuilt ESM entry; esm.sh occasionally 500s on
+      // bundled wasmer SDK requests from browser UAs.
+      const sdk: any = await import(
+        /* @vite-ignore */ "https://cdn.jsdelivr.net/npm/@wasmer/sdk@0.8.0/dist/index.mjs"
+      );
+      const { Wasmer, Directory, init } = sdk;
 
-      const wasmFs = new WasmFs();
-      const fs = wasmFs.fs;
+      await init();
 
-      // Write source file
-      fs.writeFileSync("/source.cpp", instrumentedSource);
-      fs.writeFileSync("/retrace.h", await fetchAdapterText(CPP_RETRACE_H));
+      // clang/clang from the Wasmer registry — first run downloads ~100 MB
+      // and the browser caches it for subsequent runs.
+      const clang = await Wasmer.fromRegistry("clang/clang");
+      const project = new Directory();
+      await project.writeFile("source.cpp", instrumentedSource);
+      await project.writeFile("retrace.h", await fetchAdapterText(CPP_RETRACE_H));
 
-      // Create a WASI instance for clang
-      const wasi = new WASI({
+      // --- Compile ---------------------------------------------------------
+      const compileRun = await clang.entrypoint.run({
         args: [
-          "clang",
           "-O0",
           "-g",
           "-std=c++17",
@@ -315,79 +333,51 @@ exec(open('/retrace_cpp/instrument.py').read())
           "-o",
           "/program.wasm",
         ],
-        env: {},
-        fs: fs,
-        preopens: { "/": "/" },
+        mount: { "/": project },
       });
-
-      // Fetch clang.wasm
-      const base = import.meta.env.BASE_URL ?? "./";
-      const clangUrl = new URL(
-        "assets/wasm/clang.wasm",
-        new URL(base, document.baseURI)
-      ).href;
-      const clangResp = await fetch(clangUrl);
-      if (!clangResp.ok) {
-        throw new Error(
-          `clang.wasm 未找到 (HTTP ${clangResp.status})。请设置 SKIP_CLANG_WASM=false 或手动下载。`
-        );
-      }
-      const clangWasm = await clangResp.arrayBuffer();
-
-      // Instantiate clang
-      const module = await WebAssembly.compile(clangWasm);
-      await WebAssembly.instantiate(module, {
-        ...wasi.getImports(module),
-      });
-
-      // clang writes program.wasm — now we need to run it
-      // Run the compiled program
-      if (fs.existsSync("/program.wasm")) {
-        const progWasm = fs.readFileSync("/program.wasm");
-        const progModule = await WebAssembly.compile(progWasm);
-        const progWasi = new WASI({
-          args: ["program"],
-          env: {},
-          fs: fs,
-          preopens: { "/": "/" },
-        });
-        const progInstance = await WebAssembly.instantiate(progModule, {
-          ...progWasi.getImports(progModule),
-        });
-        try {
-          progWasi.start(progInstance);
-        } catch (e) {
-          // Program exit is normal — trace is flushed via __retrace_emit
-        }
+      const compileOut = await compileRun.wait();
+      if (!compileOut.ok) {
+        const err =
+          (compileOut.stderr as string) ||
+          `clang exited with code ${compileOut.code}`;
+        throw new Error("C++ 编译失败：\n" + err);
       }
 
-      // Check if trace was captured via callback
+      // --- Run -------------------------------------------------------------
+      const wasmBytes = await project.readFile("program.wasm");
+      const program = await Wasmer.fromBytes(wasmBytes);
+      const runRun = await program.entrypoint.run({
+        args: ["program"],
+        mount: { "/": project },
+      });
+      // Program exit (even non-zero) is fine — trace is flushed at atexit.
+      await runRun.wait().catch(() => {});
+
+      // --- Read trace ------------------------------------------------------
       if (traceJson) return traceJson;
 
-      // Fall back to reading trace.json from virtual FS
-      if (fs.existsSync("/trace.json")) {
-        return fs.readFileSync("/trace.json", "utf-8");
-      }
-
-      // Fall back to window.__retrace_last
-      if ((window as any).__retrace_last) {
-        return (window as any).__retrace_last as string;
+      try {
+        const traceBytes = await project.readFile("trace.json");
+        return new TextDecoder().decode(traceBytes);
+      } catch {
+        // trace.json not written — fall back to window.__retrace_last
+        if ((window as any).__retrace_last) {
+          return (window as any).__retrace_last as string;
+        }
       }
 
       throw new Error("C++ 执行完成但未捕获 trace 输出");
     } catch (e) {
-      // CDN load failure or runtime WASM error — surface a clear, actionable
-      // message. Network/CDN errors and missing clang.wasm are the two main
-      // failure modes for the browser C++ pipeline.
       const msg = e instanceof Error ? e.message : String(e);
       if (
         msg.includes("esm.sh") ||
         msg.includes("Failed to fetch dynamically imported module") ||
-        msg.includes("clang.wasm") ||
-        msg.includes("网络")
+        msg.includes("network") ||
+        msg.toLowerCase().includes("registry")
       ) {
         throw new Error(
-          "C++ 浏览器录制需要从 CDN 加载 Wasmer SDK 并下载 clang-17 WASM 到 public/assets/wasm/。请检查网络连接，并确保已运行 npm run download:clang-wasm。原始错误：" + msg
+          "C++ 浏览器录制需要从 CDN 加载 Wasmer SDK 并从 Wasmer registry 拉取 clang 包（首次约 100MB）。请检查网络连接。原始错误：" +
+            msg
         );
       }
       throw e;
