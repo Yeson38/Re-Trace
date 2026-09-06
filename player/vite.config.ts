@@ -11,6 +11,12 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    // Wasmer JS SDK uses SharedArrayBuffer, which requires Cross-Origin
+    // Isolation. These headers enable it for `npm run dev`.
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
   },
   plugins: [
     monacoEditorPlugin({

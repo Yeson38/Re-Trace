@@ -235,13 +235,19 @@ exec(open('/retrace_cpp/instrument.py').read())
           ? instBytes
           : new TextDecoder().decode(instBytes);
 
+      // The web user's source does not include retrace.h; inject it so the
+      // __RT_* macros and Recorder are defined. The instrumented output starts
+      // with the source-listing namespace block, so prepend the include.
+      const instrumentedWithHeader =
+        '#include "retrace.h"\n' + instrumentedSource;
+
       const compileMs = performance.now() - compileStart;
 
       // Phase 2: Compile + execute via Wasmer/ClangWASI
       // This phase uses the clang-17 WASM package downloaded to public/assets/wasm/
       // The compiled binary runs in a WASI environment, and retrace.h's
       // __WASM__ branch flushes trace via window.__retrace_emit callback.
-      const traceStr = await this.runClangWasi(instrumentedSource);
+      const traceStr = await this.runClangWasi(instrumentedWithHeader);
 
       const runMs = performance.now() - t0 - compileMs;
 
@@ -303,39 +309,51 @@ exec(open('/retrace_cpp/instrument.py').read())
     };
     (window as any).__retrace_emit = emitCb;
 
+    const log = (msg: string) => console.log(`[retrace/cpp] ${msg}`);
+
     try {
       // Dynamic import from CDN — avoids bundling the heavy Wasmer SDK.
       // jsdelivr serves the prebuilt ESM entry; esm.sh occasionally 500s on
       // bundled wasmer SDK requests from browser UAs.
+      log("importing Wasmer SDK...");
       const sdk: any = await import(
         /* @vite-ignore */ "https://cdn.jsdelivr.net/npm/@wasmer/sdk@0.8.0/dist/index.mjs"
       );
       const { Wasmer, Directory, init } = sdk;
+      log("Wasmer SDK imported. init()...");
 
       await init();
+      log("init() done. fromRegistry(clang/clang)...");
 
       // clang/clang from the Wasmer registry — first run downloads ~100 MB
       // and the browser caches it for subsequent runs.
       const clang = await Wasmer.fromRegistry("clang/clang");
+      log("clang loaded. writing files...");
       const project = new Directory();
       await project.writeFile("source.cpp", instrumentedSource);
       await project.writeFile("retrace.h", await fetchAdapterText(CPP_RETRACE_H));
+      log("files written. compiling...");
 
       // --- Compile ---------------------------------------------------------
+      // NOTE: mount at /workspace (not /) — clang cannot write to the WASM
+      // root filesystem via the Wasmer Directory mount.
       const compileRun = await clang.entrypoint.run({
         args: [
           "-O0",
-          "-g",
           "-std=c++17",
+          "-fno-exceptions",
+          "-fno-rtti",
           "-I",
-          "/",
-          "/source.cpp",
+          "/workspace",
+          "/workspace/source.cpp",
           "-o",
-          "/program.wasm",
+          "/workspace/program.wasm",
         ],
-        mount: { "/": project },
+        mount: { "/workspace": project },
       });
+      log("compile started, waiting...");
       const compileOut = await compileRun.wait();
+      log(`compile done: ok=${compileOut.ok} code=${compileOut.code}`);
       if (!compileOut.ok) {
         const err =
           (compileOut.stderr as string) ||
@@ -344,14 +362,20 @@ exec(open('/retrace_cpp/instrument.py').read())
       }
 
       // --- Run -------------------------------------------------------------
+      log("reading program.wasm...");
       const wasmBytes = await project.readFile("program.wasm");
-      const program = await Wasmer.fromBytes(wasmBytes);
+      log(`program.wasm read: ${wasmBytes.byteLength} bytes. fromWasm()...`);
+      const program = await Wasmer.fromWasm(wasmBytes);
+      log("program instantiated. running...");
       const runRun = await program.entrypoint.run({
         args: ["program"],
-        mount: { "/": project },
+        mount: { "/workspace": project },
+        cwd: "/workspace",
       });
+      log("run started, waiting for exit...");
       // Program exit (even non-zero) is fine — trace is flushed at atexit.
-      await runRun.wait().catch(() => {});
+      await runRun.wait().catch((e) => log(`run.wait() error (ignored): ${e}`));
+      log("run finished.");
 
       // --- Read trace ------------------------------------------------------
       if (traceJson) return traceJson;

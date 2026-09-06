@@ -32,7 +32,7 @@
 #  include <emscripten.h>
 #  define RETRACE_WASM_BUILD 1
 #  define RETRACE_EMSCRIPTEN 1
-#elif defined(__WASM__)
+#elif defined(__WASM__) || defined(__wasm__) || defined(__wasi__)
 // clang/wasi compilation: trace is written to the virtual filesystem as
 // trace.json so the JS host (Wasmer SDK) can read it back. No EM_ASM.
 #  define RETRACE_WASM_BUILD 1
@@ -42,11 +42,374 @@
 #  define RETRACE_EMSCRIPTEN 0
 #endif
 
-#include <any>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <ctime>
+#include <cstdint>
+#include <new>
+
+#if RETRACE_WASM_BUILD
+// ============================================================
+// WASM build: ultra-lightweight C-style implementation.
+// Templates (RtVec, RtMap) and deep class hierarchies are
+// extremely slow to compile under WASM clang (5+ min), so the
+// WASM path uses fixed arrays and minimal templates.
+// ============================================================
+namespace retrace {
+
+// ---- Growable byte buffer ----
+struct RtBuf {
+  char* data = nullptr;
+  size_t len = 0;
+  size_t cap = 0;
+  ~RtBuf() { if (data) std::free(data); }
+  void reserve(size_t n) {
+    if (cap >= n) return;
+    cap = n + 32;
+    data = (char*)std::realloc(data, cap);
+  }
+  void append(const char* s) {
+    size_t n = std::strlen(s);
+    reserve(len + n + 1);
+    std::memcpy(data + len, s, n);
+    len += n;
+    data[len] = '\0';
+  }
+  void append(char c) {
+    reserve(len + 2);
+    data[len++] = c;
+    data[len] = '\0';
+  }
+  void append(const char* s, size_t n) {
+    reserve(len + n + 1);
+    std::memcpy(data + len, s, n);
+    len += n;
+    data[len] = '\0';
+  }
+};
+
+// ---- Fixed-capacity dynamic array (avoids template bloat) ----
+struct RtStrVec {
+  char** data = nullptr;
+  size_t len = 0;
+  size_t cap = 0;
+  ~RtStrVec() {
+    for (size_t i = 0; i < len; i++) if (data[i]) std::free(data[i]);
+    if (data) std::free(data);
+  }
+  void push(const char* s) {
+    if (len >= cap) {
+      cap = cap ? cap * 2 : 8;
+      data = (char**)std::realloc(data, cap * sizeof(char*));
+    }
+    size_t n = std::strlen(s ? s : "");
+    char* copy = (char*)std::malloc(n + 1);
+    std::memcpy(copy, s ? s : "", n + 1);
+    data[len++] = copy;
+  }
+};
+
+// ---- JSON string escaping ----
+inline void rt_json_escape(RtBuf& out, const char* s) {
+  out.append('"');
+  for (; *s; s++) {
+    switch (*s) {
+      case '"':  out.append("\\\"", 2); break;
+      case '\\': out.append("\\\\", 2); break;
+      case '\n': out.append("\\n", 2); break;
+      case '\r': out.append("\\r", 2); break;
+      case '\t': out.append("\\t", 2); break;
+      default:
+        if ((unsigned char)*s < 0x20) {
+          char buf[8];
+          std::snprintf(buf, sizeof(buf), "\\u%04x", (unsigned char)*s);
+          out.append(buf);
+        } else {
+          out.append(*s);
+        }
+    }
+  }
+  out.append('"');
+}
+
+// ---- to_json: serialize a value to JSON ----
+inline void to_json(RtBuf& out, const char* v) { rt_json_escape(out, v ? v : ""); }
+inline void to_json(RtBuf& out, char* v) { rt_json_escape(out, v ? v : ""); }
+inline void to_json(RtBuf& out, bool v) { out.append(v ? "true" : "false"); }
+inline void to_json(RtBuf& out, char v) { char b[16]; std::snprintf(b, sizeof(b), "%d", (int)v); out.append(b); }
+inline void to_json(RtBuf& out, int v) { char b[32]; std::snprintf(b, sizeof(b), "%d", v); out.append(b); }
+inline void to_json(RtBuf& out, unsigned v) { char b[32]; std::snprintf(b, sizeof(b), "%u", v); out.append(b); }
+inline void to_json(RtBuf& out, long v) { char b[32]; std::snprintf(b, sizeof(b), "%ld", v); out.append(b); }
+inline void to_json(RtBuf& out, unsigned long v) { char b[32]; std::snprintf(b, sizeof(b), "%lu", v); out.append(b); }
+inline void to_json(RtBuf& out, long long v) { char b[32]; std::snprintf(b, sizeof(b), "%lld", v); out.append(b); }
+inline void to_json(RtBuf& out, float v) { char b[64]; std::snprintf(b, sizeof(b), "%.9g", (double)v); out.append(b); }
+inline void to_json(RtBuf& out, double v) { char b[64]; std::snprintf(b, sizeof(b), "%.9g", v); out.append(b); }
+template <typename T, size_t N>
+void to_json(RtBuf& out, const T (&v)[N]) {
+  out.append('[');
+  for (size_t i = 0; i < N; i++) { if (i) out.append(", "); to_json(out, v[i]); }
+  out.append(']');
+}
+template <size_t N>
+void to_json(RtBuf& out, const char (&v)[N]) { rt_json_escape(out, v); }
+template <typename T>
+void to_json(RtBuf& out, const T&) { out.append("\"<object>\""); }
+
+// ---- Type name helper (no RTTI) ----
+template <typename T>
+const char* cxx_type_name() { return __PRETTY_FUNCTION__; }
+
+// ---- Scope: holds variable registrations (parallel arrays, no map) ----
+static const int RT_MAX_VARS = 64;
+struct Scope {
+  int depth = 0;
+  const char* var_names[RT_MAX_VARS];
+  const char* var_types[RT_MAX_VARS];
+  const void* var_addrs[RT_MAX_VARS];
+  void (*var_factories[RT_MAX_VARS])(const void*, RtBuf&);
+  int var_count = 0;
+
+  void reg(const char* name, const char* type, const void* addr,
+           void (*factory)(const void*, RtBuf&)) {
+    if (var_count >= RT_MAX_VARS) return;
+    var_names[var_count] = name;
+    var_types[var_count] = type;
+    var_addrs[var_count] = addr;
+    var_factories[var_count] = factory;
+    var_count++;
+  }
+};
+
+// ---- Step snapshot ----
+struct Step {
+  int line = 0;
+  int depth = 0;
+  int globalStep = 0;
+  RtBuf output;
+  // Variable snapshots (serialized JSON strings)
+  RtStrVec var_names;
+  RtStrVec var_types;
+  RtStrVec var_values;
+  // Loop counters
+  RtStrVec loop_ids;
+  int loop_currents[16] = {};
+  int loop_totals[16] = {};
+  int loop_count = 0;
+};
+
+// ---- Recorder ----
+static const int RT_MAX_SCOPES = 32;
+static const int RT_MAX_LOOPS = 16;
+static const int RT_MAX_STEPS = 4096;
+
+class Recorder {
+ public:
+  // Namespace-level static (defined below) avoids Meyers-singleton
+  // __cxa_guard_* ABI calls, so no libc++ linking is needed.
+  static Recorder& instance();
+  Recorder() = default;
+
+  void bootstrap(const char*, const char* src_name,
+                 const char* const* src_lines, int src_n) {
+    src_name_ = src_name ? src_name : "unknown.cpp";
+    src_lines_ = src_lines;
+    src_n_ = src_n;
+  }
+
+  void push_scope(const char* = "") {
+    if (scope_count_ < RT_MAX_SCOPES) {
+      scopes_[scope_count_].depth = scope_count_ ? scopes_[scope_count_ - 1].depth + 1 : 1;
+      scopes_[scope_count_].var_count = 0;
+      scope_count_++;
+    }
+  }
+  void pop_scope() { if (scope_count_) scope_count_--; }
+  int current_depth() { return scope_count_ ? scopes_[scope_count_ - 1].depth : 1; }
+
+  template <typename T>
+  void reg_var(const char* name, const T& storage) {
+    if (scope_count_ == 0) push_scope();
+    Scope& s = scopes_[scope_count_ - 1];
+    s.reg(name, cxx_type_name<T>(), &storage,
+          +[](const void* p, RtBuf& o) { to_json<T>(o, *static_cast<const T*>(p)); });
+  }
+
+  void loop_push(const char* id) {
+    if (loop_count_ < RT_MAX_LOOPS) {
+      loop_ids_[loop_count_] = id;
+      loop_currents_[loop_count_] = 0;
+      loop_totals_[loop_count_] = 0;
+      loop_count_++;
+    }
+  }
+  void loop_increment_entry(const char* id) {
+    for (int i = loop_count_ - 1; i >= 0; i--) {
+      if (std::strcmp(loop_ids_[i], id) == 0) {
+        loop_currents_[i]++;
+        if (loop_totals_[i] < loop_currents_[i] + 1)
+          loop_totals_[i] = loop_currents_[i] + 1;
+        return;
+      }
+    }
+  }
+  void loop_set_total(const char* id, int total) {
+    for (int i = 0; i < loop_count_; i++)
+      if (std::strcmp(loop_ids_[i], id) == 0) loop_totals_[i] = total;
+  }
+  void loop_pop(const char* id) {
+    for (int i = 0; i < loop_count_; i++) {
+      if (std::strcmp(loop_ids_[i], id) == 0) {
+        for (int j = i; j + 1 < loop_count_; j++) {
+          loop_ids_[j] = loop_ids_[j + 1];
+          loop_currents_[j] = loop_currents_[j + 1];
+          loop_totals_[j] = loop_totals_[j + 1];
+        }
+        loop_count_--;
+        return;
+      }
+    }
+  }
+
+  void step_record(int line, const char* entering_loop_id = nullptr) {
+    if (step_count_ >= RT_MAX_STEPS) return;
+    if (entering_loop_id) loop_increment_entry(entering_loop_id);
+    Step& st = steps_[step_count_];
+    st.line = line;
+    st.depth = current_depth();
+    st.globalStep = step_count_;
+    st.var_names.len = 0; st.var_types.len = 0; st.var_values.len = 0;
+    for (int si = 0; si < scope_count_; si++) {
+      Scope& scope = scopes_[si];
+      for (int vi = 0; vi < scope.var_count; vi++) {
+        st.var_names.push(scope.var_names[vi]);
+        st.var_types.push(scope.var_types[vi]);
+        RtBuf jb;
+        scope.var_factories[vi](scope.var_addrs[vi], jb);
+        st.var_values.push(jb.data ? jb.data : "null");
+      }
+    }
+    st.loop_ids.len = 0;
+    st.loop_count = loop_count_;
+    for (int i = 0; i < loop_count_; i++) {
+      st.loop_ids.push(loop_ids_[i]);
+      st.loop_currents[i] = loop_currents_[i];
+      st.loop_totals[i] = loop_totals_[i];
+    }
+    step_count_++;
+  }
+
+  void flush_to_disk() {
+    if (flushed_) return;
+    flushed_ = true;
+    FILE* f = std::fopen("trace.json", "wb");
+    if (!f) return;
+    write_json(f);
+    std::fclose(f);
+  }
+
+ private:
+  void write_json(FILE* f) {
+    std::fprintf(f, "{\n  \"source\": {\n");
+    const char* sn = src_name_;
+    const char* slash = std::strrchr(sn, '/');
+    if (slash) sn = slash + 1;
+    RtBuf nb; rt_json_escape(nb, sn);
+    std::fprintf(f, "    \"name\": %s,\n", nb.data ? nb.data : "\"\"");
+    std::fprintf(f, "    \"language\": \"cpp\",\n    \"lines\": [");
+    for (int i = 0; i < src_n_; i++) {
+      RtBuf lb; rt_json_escape(lb, src_lines_[i] ? src_lines_[i] : "");
+      std::fprintf(f, "%s\n      %s", i == 0 ? "" : ",", lb.data ? lb.data : "\"\"");
+    }
+    std::fprintf(f, "\n    ]\n  },\n  \"steps\": [");
+    for (int i = 0; i < step_count_; i++) {
+      std::fprintf(f, "%s\n", i == 0 ? "" : ",");
+      write_step(f, steps_[i], "    ");
+    }
+    if (step_count_) std::fprintf(f, "\n  ");
+    std::fprintf(f, "]\n}\n");
+  }
+
+  static void write_step(FILE* f, const Step& s, const char* pad) {
+    std::fprintf(f, "%s{\n", pad);
+    std::fprintf(f, "%s  \"line\": %d,\n", pad, s.line);
+    std::fprintf(f, "%s  \"depth\": %d,\n", pad, s.depth);
+    std::fprintf(f, "%s  \"vars\": [", pad);
+    for (int i = 0; i < s.var_names.len; i++) {
+      if (i) std::fprintf(f, ",");
+      RtBuf n, t, v;
+      rt_json_escape(n, s.var_names.data[i]);
+      rt_json_escape(t, s.var_types.data[i]);
+      rt_json_escape(v, s.var_values.data[i]);
+      std::fprintf(f, "\n%s    {\"name\": %s, \"value\": %s, \"type\": %s}",
+                   pad, n.data, v.data, t.data);
+    }
+    if (s.var_names.len) std::fprintf(f, "\n%s  ", pad);
+    std::fprintf(f, "],\n");
+    std::fprintf(f, "%s  \"loops\": [", pad);
+    for (int i = 0; i < s.loop_count; i++) {
+      if (i) std::fprintf(f, ",");
+      RtBuf ib; rt_json_escape(ib, s.loop_ids.data[i]);
+      std::fprintf(f, "{\"id\": %s, \"current\": %d, \"total\": %d}",
+                   ib.data, s.loop_currents[i], s.loop_totals[i]);
+    }
+    std::fprintf(f, "],\n");
+    RtBuf ob; rt_json_escape(ob, s.output.data ? s.output.data : "");
+    std::fprintf(f, "%s  \"output\": %s,\n", pad, ob.data ? ob.data : "\"\"");
+    std::fprintf(f, "%s  \"globalStep\": %d\n", pad, s.globalStep);
+    std::fprintf(f, "%s}", pad);
+  }
+
+  bool flushed_ = false;
+  const char* src_name_ = "unknown.cpp";
+  const char* const* src_lines_ = nullptr;
+  int src_n_ = 0;
+  Scope scopes_[RT_MAX_SCOPES];
+  int scope_count_ = 0;
+  const char* loop_ids_[RT_MAX_LOOPS];
+  int loop_currents_[RT_MAX_LOOPS] = {};
+  int loop_totals_[RT_MAX_LOOPS] = {};
+  int loop_count_ = 0;
+  Step steps_[RT_MAX_STEPS];
+  int step_count_ = 0;
+};
+
+// Namespace-level singleton instance (no __cxa_guard needed).
+static Recorder g_retrace_recorder;
+inline Recorder& Recorder::instance() { return g_retrace_recorder; }
+
+struct ScopeGuard {
+  ScopeGuard() { Recorder::instance().push_scope(); }
+  explicit ScopeGuard(const char* fn) { Recorder::instance().push_scope(fn); }
+  ~ScopeGuard() { Recorder::instance().pop_scope(); }
+};
+
+struct BootstrapGuard {
+  BootstrapGuard(const char* json_path, const char* src_name,
+                 const char* const* src_lines, int src_n) {
+    Recorder::instance().bootstrap(json_path, src_name, src_lines, src_n);
+    Recorder::instance().push_scope("main");
+  }
+  ~BootstrapGuard() {
+    Recorder::instance().pop_scope();
+    Recorder::instance().flush_to_disk();
+  }
+};
+
+struct LoopGuard {
+  const char* id;
+  explicit LoopGuard(const char* id_) : id(id_) {
+    Recorder::instance().loop_push(id);
+  }
+  ~LoopGuard() { Recorder::instance().loop_pop(id); }
+};
+
+}  // namespace retrace
+
+#else  // !RETRACE_WASM_BUILD
+// ============================================================
+// Native build: full STL implementation (Phase 2 compat).
+// ============================================================
+#include <any>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -58,6 +421,9 @@
 #include <stack>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
+#include <typeinfo>
+#include <utility>
 #include <vector>
 
 namespace retrace {
@@ -586,6 +952,8 @@ struct LoopGuard {
 };
 
 }  // namespace retrace
+
+#endif  // RETRACE_WASM_BUILD
 
 // =============================================================================
 // User-facing macros

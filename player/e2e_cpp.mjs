@@ -6,8 +6,18 @@ const pages = await browser.pages();
 const page = pages[0] || (await browser.newPage());
 
 const log = [];
-page.on("console", (m) => log.push(`[${m.type()}] ${m.text()}`));
-page.on("pageerror", (e) => log.push(`[pageerror] ${e.message}`));
+page.on("console", (m) => {
+  const line = `[${m.type()}] ${m.text()}`;
+  log.push(line);
+  // Print retrace/cpp logs in real-time for debugging
+  if (line.includes("retrace/cpp") || line.includes("retrace") || m.type() === "error") {
+    console.log("  BROWSER:", line.substring(0, 300));
+  }
+});
+page.on("pageerror", (e) => {
+  log.push(`[pageerror] ${e.message}`);
+  console.log("  BROWSER [pageerror]:", e.message?.substring(0, 300));
+});
 
 await page.goto("http://localhost:5173/", { waitUntil: "networkidle2", timeout: 90000 });
 
@@ -17,24 +27,26 @@ await page.waitForFunction(
 );
 console.log("Recorder ready.");
 
-const cppSource = `#include <iostream>
-#include <vector>
-using namespace std;
+const cppSource = `#include <cstdio>
 
-int main() {
-    vector<int> a = {5, 2, 9, 1};
-    int n = a.size();
+void bubble_sort(int arr[], int n) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n - i - 1; j++) {
-            if (a[j] > a[j+1]) {
-                int t = a[j];
-                a[j] = a[j+1];
-                a[j+1] = t;
+            if (arr[j] > arr[j + 1]) {
+                int t = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = t;
             }
         }
     }
-    for (int x : a) cout << x << " ";
-    cout << endl;
+}
+
+int main() {
+    int data[] = {5, 2, 8, 1, 4};
+    int n = 5;
+    bubble_sort(data, n);
+    for (int i = 0; i < n; i++) printf("%d ", data[i]);
+    printf("\\n");
     return 0;
 }
 `;

@@ -1,23 +1,22 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
+#include <cstdio>
 
-void bubble_sort(vector<int>& arr) {
-    int n = arr.size();
+void bubble_sort(int arr[], int n) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n - i - 1; j++) {
             if (arr[j] > arr[j + 1]) {
-                swap(arr[j], arr[j + 1]);
+                int t = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = t;
             }
         }
     }
 }
 
 int main() {
-    vector<int> data = {5, 2, 8, 1, 4};
-    bubble_sort(data);
-    for (int x : data) cout << x << " ";
-    cout << endl;
+    int data[] = {5, 2, 8, 1, 4};
+    int n = 5;
+    bubble_sort(data, n);
+    for (int i = 0; i < n; i++) printf("%d ", data[i]);
+    printf("\n");
     return 0;
 }

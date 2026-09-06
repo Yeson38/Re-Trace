@@ -36,6 +36,7 @@ from typing import List, Optional
 
 _STEP_MACRO = "__RT_STEP"
 _VAR_MACRO = "__RT_VAR"
+_MAIN_MACRO = "__RT_MAIN"
 _LOOP_BEGIN = "__RT_LOOP_BEGIN"
 _LOOP_END = "__RT_LOOP_END"
 
@@ -283,6 +284,7 @@ def instrument(source: str, source_name: str = "<source>") -> str:
 
     prev_balance = 0
     in_preproc_continuation = False  # lines ending with '\'
+    pending_braceless = None  # None=no braceless loop; True=close on next stmt; False=close now
 
     for idx, raw in enumerate(raw_lines):
         lineno = idx + 1
@@ -335,6 +337,7 @@ def instrument(source: str, source_name: str = "<source>") -> str:
 
         deferred_var_regs: List[str] = []
         deferred_step_after = False   # emit STEP AFTER the raw line (scope guards, main)
+        deferred_main_bootstrap = False  # inject __RT_MAIN after this line
 
         if not skip:
             # Scope markers: the user-written macros __RT_MAIN(...) and
@@ -347,6 +350,10 @@ def instrument(source: str, source_name: str = "<source>") -> str:
             is_scope_entry_line = False
             if lead_tokens.startswith("__RT_MAIN") or lead_tokens.startswith("__RT_FN"):
                 is_scope_entry_line = True
+
+            # Auto-inject __RT_MAIN into main() so users don't need to.
+            if "main(" in stripped and "{" in stripped and not is_scope_entry_line:
+                deferred_main_bootstrap = True
 
             # Step insertion: for every statement-bearing line we insert a
             # STEP macro using the ORIGINAL line number.
@@ -384,7 +391,10 @@ def instrument(source: str, source_name: str = "<source>") -> str:
                 # Harvest any local declaration on this line.
                 # - for-init:  for (int i = ...)  — header declares inside for(),
                 #   so the name is visible starting right after the header.
-                if _FOR_HEADER.match(stripped):
+                #   Only register the var if the body is a braced block; for a
+                #   single-statement body (no '{') the for-init var is out of
+                #   scope on the next line, so we skip registration.
+                if _FOR_HEADER.match(stripped) and "{" in stripped:
                     name = _try_harvest_for_init(stripped)
                     if name:
                         deferred_var_regs.append(f"{_VAR_MACRO}({lineno}, {name});")
@@ -460,6 +470,11 @@ def instrument(source: str, source_name: str = "<source>") -> str:
         if not skip and (_FOR_HEADER.match(stripped) or _WHILE_HEADER.match(stripped)):
             if "{" not in stripped:
                 out.append(f"{_LOOP_BEGIN}(L{lineno});")
+                # If the body is on the same line (statement after ')'), we
+                # close the loop right after this line. Otherwise the body is
+                # on the next line and we close after that.
+                last_paren = stripped.rfind(")")
+                pending_braceless = ";" not in stripped[last_paren:] if last_paren >= 0 else True
 
         # Keep the ORIGINAL source line last so compiler __LINE__ macros
         # stay aligned to the input file's line numbers if the user uses them.
@@ -468,10 +483,28 @@ def instrument(source: str, source_name: str = "<source>") -> str:
         # name is in scope at this point (C++ declaration order matters).
         for reg in deferred_var_regs:
             out.append(reg)
+        # Auto-injected __RT_MAIN bootstraps the recorder + atexit flush.
+        if deferred_main_bootstrap:
+            out.append(f'{_MAIN_MACRO}("trace.json");')
         # Scope-entry lines (e.g. `__RT_FN;`) need their step recorded AFTER
         # the ScopeGuard push, so depth/scope is correct.
         if deferred_step_after:
             out.append(f"{_STEP_MACRO}({lineno});")
+
+        # Close a braceless loop right after its single body statement.
+        # pending_braceless is True when the body is on the NEXT line; close
+        # on the next non-header statement. When False, the body was on the
+        # same line as the header, so close immediately (but skip the header
+        # line itself — handled by the True case below).
+        if pending_braceless is True and not (_FOR_HEADER.match(stripped) or _WHILE_HEADER.match(stripped)):
+            out.append(f"{_LOOP_END}({pending_ends[-1][2]});")
+            pending_ends.pop()
+            pending_braceless = False
+        elif pending_braceless is False:
+            # Body on same line as header: close after the header line.
+            out.append(f"{_LOOP_END}({pending_ends[-1][2]});")
+            pending_ends.pop()
+            pending_braceless = None
 
         if balance is not None:
             prev_balance = balance
