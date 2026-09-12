@@ -374,7 +374,7 @@ exec(open('/retrace_cpp/instrument.py').read())
       });
       log("run started, waiting for exit...");
       // Program exit (even non-zero) is fine — trace is flushed at atexit.
-      await runRun.wait().catch((e) => log(`run.wait() error (ignored): ${e}`));
+      await runRun.wait().catch((e: unknown) => log(`run.wait() error (ignored): ${String(e)}`));
       log("run finished.");
 
       // --- Read trace ------------------------------------------------------
