@@ -1,0 +1,83 @@
+name: Deploy Player to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: player/package-lock.json
+
+      - name: Install
+        working-directory: player
+        run: npm ci
+
+      - name: Stage adapters into player/public/adapters (so BrowserRecorderService can fetch them)
+        run: |
+          mkdir -p player/public/adapters/{python,cpp} player/public/assets/wasm player/src/templates
+          cp adapters/python/instrument.py              player/public/adapters/python/instrument.py
+          cp adapters/cpp/instrument.py                 player/public/adapters/cpp/instrument.py
+          cp adapters/cpp/retrace.h                     player/public/adapters/cpp/retrace.h
+          cp adapters/python/samples/bubble_sort.py     player/src/templates/python-bubble.py
+          cp adapters/cpp/samples/bubble_sort.cpp       player/src/templates/cpp-bubble.cpp
+          cp adapters/python/samples/bubble_sort.trace.json player/public/samples/bubble_sort.json
+
+      - name: (Optional) Download browser clang WASM asset for lazy C++ recording
+        working-directory: player
+        env:
+          # Skip for fast PR builds; set the secret if you want to enable C++ Web recording on Pages.
+          SKIP_CLANG_WASM: ${{ secrets.SKIP_CLANG_WASM || 'true' }}
+        run: |
+          if [ "$SKIP_CLANG_WASM" = "true" ]; then
+            echo "SKIP_CLANG_WASM=true — skipping clang-17 wasm download (~100MB per run).";
+            mkdir -p public/assets/wasm
+            echo '{"note":"clang-17 wasm not staged. Set GH secret SKIP_CLANG_WASM=false to enable C++ Web recording."}' > public/assets/wasm/manifest.json
+          else
+            npm run download:clang-wasm
+          fi
+
+      - name: Build Player (includes Monaco workers + chunk-split monaco)
+        working-directory: player
+        run: |
+          npm run typecheck
+          npm run test:services
+          npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: player/dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

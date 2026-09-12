@@ -1,0 +1,558 @@
+{
+  "source": {
+    "name": "test_bubble.cpp",
+    "language": "cpp",
+    "lines": [
+      "#include <cstdio>",
+      "",
+      "void bubble_sort(int arr[], int n) {",
+      "    for (int i = 0; i < n; i++) {",
+      "        for (int j = 0; j < n - i - 1; j++) {",
+      "            if (arr[j] > arr[j + 1]) {",
+      "                int t = arr[j];",
+      "                arr[j] = arr[j + 1];",
+      "                arr[j + 1] = t;",
+      "            }",
+      "        }",
+      "    }",
+      "}",
+      "",
+      "int main() {",
+      "    int data[] = {5, 2, 8, 1, 4};",
+      "    int n = 5;",
+      "    bubble_sort(data, n);",
+      "    for (int i = 0; i < n; i++) printf(\"%d \", data[i]);",
+      "    printf(\"\\n\");",
+      "    return 0;",
+      "}"
+    ]
+  },
+  "steps": [
+    {
+      "line": 16,
+      "depth": 1,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 0
+    },
+    {
+      "line": 17,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 1
+    },
+    {
+      "line": 18,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "n", "value": 5, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 2
+    },
+    {
+      "line": 4,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "n", "value": 5, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 3
+    },
+    {
+      "line": 5,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 4
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 5
+    },
+    {
+      "line": 7,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 6
+    },
+    {
+      "line": 8,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 7
+    },
+    {
+      "line": 9,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 8
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 1, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 9
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 10
+    },
+    {
+      "line": 7,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 11
+    },
+    {
+      "line": 8,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 12
+    },
+    {
+      "line": 9,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 13
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 3, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 14
+    },
+    {
+      "line": 7,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 3, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 15
+    },
+    {
+      "line": 8,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 3, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 16
+    },
+    {
+      "line": 9,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 3, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 17
+    },
+    {
+      "line": 5,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 4, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 18
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 19
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 1, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 20
+    },
+    {
+      "line": 7,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 1, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 8, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 21
+    },
+    {
+      "line": 8,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 1, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 22
+    },
+    {
+      "line": 9,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 1, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 23
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 24
+    },
+    {
+      "line": 7,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 25
+    },
+    {
+      "line": 8,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 26
+    },
+    {
+      "line": 9,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 1, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 27
+    },
+    {
+      "line": 5,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 2, "type": "int"},
+        {"name": "j", "value": 3, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 28
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 2, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 29
+    },
+    {
+      "line": 7,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 2, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 5, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 30
+    },
+    {
+      "line": 8,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 2, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 2, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 31
+    },
+    {
+      "line": 9,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 2, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 2, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 32
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 2, "type": "int"},
+        {"name": "j", "value": 1, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 2, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 33
+    },
+    {
+      "line": 5,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 3, "type": "int"},
+        {"name": "j", "value": 2, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 2, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 34
+    },
+    {
+      "line": 6,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 3, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 2, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0},{"id": "L5", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 35
+    },
+    {
+      "line": 5,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 4, "type": "int"},
+        {"name": "j", "value": 1, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 2, "type": "int"}
+      ],
+      "loops": [{"id": "L4", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 36
+    },
+    {
+      "line": 19,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 2, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 37
+    },
+    {
+      "line": 20,
+      "depth": 1,
+      "vars": [
+        {"name": "data", "value": 0x7fff607c6540, "type": "int [5]"},
+        {"name": "i", "value": 0, "type": "int"},
+        {"name": "j", "value": 0, "type": "int"},
+        {"name": "n", "value": 5, "type": "int"},
+        {"name": "t", "value": 0, "type": "int"}
+      ],
+      "loops": [{"id": "L19", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 38
+    }
+  ]
+}

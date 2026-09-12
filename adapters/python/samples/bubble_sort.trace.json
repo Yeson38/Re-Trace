@@ -1,0 +1,1120 @@
+{
+  "source": {
+    "name": "bubble_sort.py",
+    "language": "python",
+    "lines": [
+      "def bubble_sort(arr):",
+      "    n = len(arr)",
+      "    for i in range(n):",
+      "        for j in range(0, n - i - 1):",
+      "            if arr[j] > arr[j + 1]:",
+      "                arr[j], arr[j + 1] = arr[j + 1], arr[j]",
+      "    return arr",
+      "",
+      "data = [5, 2, 8, 1, 4]",
+      "result = bubble_sort(data)",
+      "print(result)"
+    ]
+  },
+  "steps": [
+    {
+      "line": 1,
+      "depth": 1,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 0
+    },
+    {
+      "line": 9,
+      "depth": 1,
+      "vars": [
+        {
+          "name": "bubble_sort",
+          "value": "<function bubble_sort at 0x7f5a83b1ada0>",
+          "type": "function"
+        }
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 1
+    },
+    {
+      "line": 10,
+      "depth": 1,
+      "vars": [
+        {
+          "name": "bubble_sort",
+          "value": "<function bubble_sort at 0x7f5a83b1ada0>",
+          "type": "function"
+        },
+        {
+          "name": "data",
+          "value": [
+            5,
+            2,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        }
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 2
+    },
+    {
+      "line": 2,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            5,
+            2,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        }
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 3
+    },
+    {
+      "line": 3,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            5,
+            2,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 4
+    },
+    {
+      "line": 4,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            5,
+            2,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        }
+      ],
+      "output": "",
+      "globalStep": 5
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            5,
+            2,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 0,
+          "total": 4
+        }
+      ],
+      "output": "",
+      "globalStep": 6
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            5,
+            2,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 0,
+          "total": 4
+        }
+      ],
+      "output": "",
+      "globalStep": 7
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 1,
+          "total": 4
+        }
+      ],
+      "output": "",
+      "globalStep": 8
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 2,
+          "total": 4
+        }
+      ],
+      "output": "",
+      "globalStep": 9
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            8,
+            1,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 2,
+          "total": 4
+        }
+      ],
+      "output": "",
+      "globalStep": 10
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            1,
+            8,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 3,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 3,
+          "total": 4
+        }
+      ],
+      "output": "",
+      "globalStep": 11
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            1,
+            8,
+            4
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 3,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 0,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 3,
+          "total": 4
+        }
+      ],
+      "output": "",
+      "globalStep": 12
+    },
+    {
+      "line": 4,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            1,
+            4,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 3,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 1,
+          "total": 5
+        }
+      ],
+      "output": "",
+      "globalStep": 13
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            1,
+            4,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 1,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 0,
+          "total": 3
+        }
+      ],
+      "output": "",
+      "globalStep": 14
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            1,
+            4,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 1,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 1,
+          "total": 3
+        }
+      ],
+      "output": "",
+      "globalStep": 15
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            5,
+            1,
+            4,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 1,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 1,
+          "total": 3
+        }
+      ],
+      "output": "",
+      "globalStep": 16
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            1,
+            5,
+            4,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 1,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 2,
+          "total": 3
+        }
+      ],
+      "output": "",
+      "globalStep": 17
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            1,
+            5,
+            4,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 1,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 2,
+          "total": 3
+        }
+      ],
+      "output": "",
+      "globalStep": 18
+    },
+    {
+      "line": 4,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            1,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 2,
+          "total": 5
+        }
+      ],
+      "output": "",
+      "globalStep": 19
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            1,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 2,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 0,
+          "total": 2
+        }
+      ],
+      "output": "",
+      "globalStep": 20
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            2,
+            1,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 2,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 0,
+          "total": 2
+        }
+      ],
+      "output": "",
+      "globalStep": 21
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 2,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 2,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 1,
+          "total": 2
+        }
+      ],
+      "output": "",
+      "globalStep": 22
+    },
+    {
+      "line": 4,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 3,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 1,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 3,
+          "total": 5
+        }
+      ],
+      "output": "",
+      "globalStep": 23
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 3,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 3,
+          "total": 5
+        },
+        {
+          "id": "L4",
+          "current": 0,
+          "total": 1
+        }
+      ],
+      "output": "",
+      "globalStep": 24
+    },
+    {
+      "line": 4,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 4,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [
+        {
+          "id": "L3",
+          "current": 4,
+          "total": 5
+        }
+      ],
+      "output": "",
+      "globalStep": 25
+    },
+    {
+      "line": 7,
+      "depth": 2,
+      "vars": [
+        {
+          "name": "arr",
+          "value": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "i",
+          "value": 4,
+          "type": "int"
+        },
+        {
+          "name": "j",
+          "value": 0,
+          "type": "int"
+        },
+        {
+          "name": "n",
+          "value": 5,
+          "type": "int"
+        }
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 26
+    },
+    {
+      "line": 11,
+      "depth": 1,
+      "vars": [
+        {
+          "name": "bubble_sort",
+          "value": "<function bubble_sort at 0x7f5a83b1ada0>",
+          "type": "function"
+        },
+        {
+          "name": "data",
+          "value": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        },
+        {
+          "name": "result",
+          "value": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ],
+          "type": "list"
+        }
+      ],
+      "loops": [],
+      "output": "[1, 2, 4, 5, 8]\n",
+      "globalStep": 27
+    }
+  ]
+}

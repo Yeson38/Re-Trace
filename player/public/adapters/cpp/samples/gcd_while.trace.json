@@ -1,0 +1,190 @@
+{
+  "source": {
+    "name": "gcd_while.cpp",
+    "language": "cpp",
+    "lines": [
+      "#include \"retrace.h\"",
+      "#include <iostream>",
+      "",
+      "int gcd(int a, int b) {",
+      "  __RT_FN;",
+      "  __RT_PARAM(a);",
+      "  __RT_PARAM(b);",
+      "  while (b != 0) {",
+      "    int t = a % b;",
+      "    a = b;",
+      "    b = t;",
+      "  }",
+      "  return a;",
+      "}",
+      "",
+      "int main() {",
+      "  __RT_MAIN(\"gcd_while.trace.json\");",
+      "  std::cout << gcd(48, 18) << std::endl;",
+      "  return 0;",
+      "}"
+    ]
+  },
+  "steps": [
+    {
+      "line": 17,
+      "depth": 1,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 0
+    },
+    {
+      "line": 18,
+      "depth": 1,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 1
+    },
+    {
+      "line": 5,
+      "depth": 2,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 2
+    },
+    {
+      "line": 6,
+      "depth": 2,
+      "vars": [],
+      "loops": [],
+      "output": "",
+      "globalStep": 3
+    },
+    {
+      "line": 7,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 48, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 4
+    },
+    {
+      "line": 8,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 48, "type": "int"},
+        {"name": "b", "value": 18, "type": "int"}
+      ],
+      "loops": [],
+      "output": "",
+      "globalStep": 5
+    },
+    {
+      "line": 9,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 48, "type": "int"},
+        {"name": "b", "value": 18, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 6
+    },
+    {
+      "line": 10,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 48, "type": "int"},
+        {"name": "b", "value": 18, "type": "int"},
+        {"name": "t", "value": 12, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 7
+    },
+    {
+      "line": 11,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 18, "type": "int"},
+        {"name": "b", "value": 18, "type": "int"},
+        {"name": "t", "value": 12, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 8
+    },
+    {
+      "line": 9,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 18, "type": "int"},
+        {"name": "b", "value": 12, "type": "int"},
+        {"name": "t", "value": 12, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 9
+    },
+    {
+      "line": 10,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 18, "type": "int"},
+        {"name": "b", "value": 12, "type": "int"},
+        {"name": "t", "value": 6, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 10
+    },
+    {
+      "line": 11,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 12, "type": "int"},
+        {"name": "b", "value": 12, "type": "int"},
+        {"name": "t", "value": 6, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 11
+    },
+    {
+      "line": 9,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 12, "type": "int"},
+        {"name": "b", "value": 6, "type": "int"},
+        {"name": "t", "value": 6, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 12
+    },
+    {
+      "line": 10,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 12, "type": "int"},
+        {"name": "b", "value": 6, "type": "int"},
+        {"name": "t", "value": 0, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "",
+      "globalStep": 13
+    },
+    {
+      "line": 11,
+      "depth": 2,
+      "vars": [
+        {"name": "a", "value": 6, "type": "int"},
+        {"name": "b", "value": 6, "type": "int"},
+        {"name": "t", "value": 0, "type": "int"}
+      ],
+      "loops": [{"id": "L8", "current": 0, "total": 0}],
+      "output": "6\n",
+      "globalStep": 14
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "noEmit": false,
+    "outDir": "./dist-test",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "types": ["node"]
+  },
+  "include": [
+    "src/types.ts",
+    "src/analysis.ts",
+    "src/services/types.ts",
+    "src/services/factories.ts",
+    "src/services/browserHelpers.ts",
+    "src/services/native.ts",
+    "scripts/test_analysis.ts",
+    "scripts/test_services.ts"
+  ]
+}

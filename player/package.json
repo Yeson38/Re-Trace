@@ -1,0 +1,32 @@
+{
+  "name": "re-trace-player",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Re-Trace Phase 0 — language-agnostic execution trace player (HTML+TS, no framework).",
+  "scripts": {
+    "dev": "vite",
+    "dev:tauri": "tauri dev",
+    "build": "NODE_OPTIONS=--max-old-space-size=6144 vite build",
+    "build:tauri": "tauri build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "gen:demo": "python3 ../adapters/python/instrument.py ../adapters/python/samples/bubble_sort.py -o public/samples/bubble_sort.json",
+    "download:clang-wasm": "tsx scripts/download_clang_wasm.ts",
+    "test:analysis": "tsc --project tsconfig.test.json && echo '{\"type\":\"commonjs\"}' > dist-test/package.json && node dist-test/scripts/test_analysis.js",
+    "test:services": "tsc --project tsconfig.test.json && echo '{\"type\":\"commonjs\"}' > dist-test/package.json && node dist-test/scripts/test_services.js",
+    "test": "npm run test:analysis && npm run test:services"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "@types/node": "^20.19.43",
+    "puppeteer-core": "^25.10.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10",
+    "vite-plugin-monaco-editor": "^1.1.0"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1",
+    "monaco-editor": "^0.56.0"
+  }
+}
