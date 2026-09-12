@@ -64,9 +64,10 @@ jobs:
           npm run build
 
       - name: Setup Pages
+        # NOTE: requires Pages to be enabled once in repo Settings → Pages →
+        # "Build and deployment from GitHub Actions". The default GITHUB_TOKEN
+        # cannot create the Pages site (needs administration), so do it manually.
         uses: actions/configure-pages@v5
-        with:
-          enablement: true  # auto-enable Pages on the repo if not yet enabled
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
