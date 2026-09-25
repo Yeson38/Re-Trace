@@ -48,7 +48,6 @@ export class Controls {
   private readonly onMarkA: MarkHandler;
   private readonly onMarkB: MarkHandler;
   private readonly onClearMarks: ClearMarkHandler;
-  private readonly isMobile: boolean;
 
   constructor(
     host: HTMLElement,
@@ -66,18 +65,11 @@ export class Controls {
 
     host.replaceChildren();
 
-    // On narrow screens, use icon-only button labels so the transport bar
-    // fits in a single row. Desktop keeps the full text labels.
-    this.isMobile =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(max-width: 760px)").matches;
-    const isMobile = this.isMobile;
-
-    this.restartBtn = this.btn(isMobile ? "⏮" : "⏮ Restart", "Restart from first step", () => player.restart());
-    this.prevBtn = this.btn(isMobile ? "◀" : "◀ Step", "Step backward", () => player.prev());
-    this.playBtn = this.btn(isMobile ? "▶" : "▶ Play", "Toggle autoplay", () => player.toggle());
+    this.restartBtn = this.btn("⏮ Restart", "Restart from first step", () => player.restart());
+    this.prevBtn = this.btn("◀ Step", "Step backward", () => player.prev());
+    this.playBtn = this.btn("▶ Play", "Toggle autoplay", () => player.toggle());
     this.playBtn.classList.add("primary");
-    this.nextBtn = this.btn(isMobile ? "▶" : "Step ▶", "Step forward", () => player.next());
+    this.nextBtn = this.btn("Step ▶", "Step forward", () => player.next());
 
     const sliderWrap = document.createElement("label");
     sliderWrap.className = "transport-label";
@@ -114,15 +106,15 @@ export class Controls {
     divider1.className = "transport-sep";
     divider1.setAttribute("aria-hidden", "true");
 
-    this.markABtn = this.btn(isMobile ? "◉A" : "◉ Mark A", "Anchor first time-point for variable diff (A)",
+    this.markABtn = this.btn("◉ Mark A", "Anchor first time-point for variable diff (A)",
       () => this.onMarkA(player.getState().index));
     this.markABtn.classList.add("mark-btn", "mark-a");
 
-    this.markBBtn = this.btn(isMobile ? "◉B" : "◉ Mark B", "Anchor second time-point for variable diff (B)",
+    this.markBBtn = this.btn("◉ Mark B", "Anchor second time-point for variable diff (B)",
       () => this.onMarkB(player.getState().index));
     this.markBBtn.classList.add("mark-btn", "mark-b");
 
-    this.clearMarkBtn = this.btn(isMobile ? "✕" : "✕ Clear", "Clear diff anchors and return to live variables",
+    this.clearMarkBtn = this.btn("✕ Clear", "Clear diff anchors and return to live variables",
       () => this.onClearMarks());
     this.clearMarkBtn.classList.add("mark-btn", "mark-clear");
     this.clearMarkBtn.disabled = true;
@@ -145,24 +137,19 @@ export class Controls {
 
   /** Update the Mark A/B buttons to reflect the currently set anchor indices. */
   setMarks(a: number | null, b: number | null): void {
-    if (this.isMobile) {
-      this.markABtn.textContent = a === null ? "◉A" : `◉A#${a + 1}`;
-      this.markBBtn.textContent = b === null ? "◉B" : `◉B#${b + 1}`;
+    if (a === null) {
+      this.markABtn.classList.remove("set");
+      this.markABtn.textContent = "◉ Mark A";
     } else {
-      if (a === null) {
-        this.markABtn.classList.remove("set");
-        this.markABtn.textContent = "◉ Mark A";
-      } else {
-        this.markABtn.classList.add("set");
-        this.markABtn.textContent = `◉ A = #${a + 1}`;
-      }
-      if (b === null) {
-        this.markBBtn.classList.remove("set");
-        this.markBBtn.textContent = "◉ Mark B";
-      } else {
-        this.markBBtn.classList.add("set");
-        this.markBBtn.textContent = `◉ B = #${b + 1}`;
-      }
+      this.markABtn.classList.add("set");
+      this.markABtn.textContent = `◉ A = #${a + 1}`;
+    }
+    if (b === null) {
+      this.markBBtn.classList.remove("set");
+      this.markBBtn.textContent = "◉ Mark B";
+    } else {
+      this.markBBtn.classList.add("set");
+      this.markBBtn.textContent = `◉ B = #${b + 1}`;
     }
     this.clearMarkBtn.disabled = a === null && b === null;
   }
@@ -203,9 +190,7 @@ export class Controls {
     this.slider.min = "0";
     this.slider.max = String(max);
     this.slider.value = String(Math.min(state.index, max));
-    this.playBtn.textContent = this.isMobile
-      ? state.playing ? "⏸" : "▶"
-      : state.playing ? "⏸ Pause" : "▶ Play";
+    this.playBtn.textContent = state.playing ? "⏸ Pause" : "▶ Play";
     this.prevBtn.disabled = state.index <= 0;
     this.restartBtn.disabled = state.index <= 0;
     this.nextBtn.disabled = state.index >= max;

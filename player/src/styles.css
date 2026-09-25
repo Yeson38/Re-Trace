@@ -523,18 +523,14 @@ body {
   .pane-block.active { display: flex; flex: 1 1 auto; min-height: 0; }
   .pane-block.pane-terminal.active { display: flex; }
 
-  /* Transport: icon-only buttons. Row1 = play buttons + slider,
-     row2 wraps speed + mark buttons automatically. */
+  /* Transport: wrap to two rows — row1 = step buttons + slider, row2 = marks */
   .transport {
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px 8px;
-    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
   }
-  .transport .btn { flex: 0 0 auto; min-width: 44px; padding: 8px 10px; }
-  .transport .btn.primary { min-width: 52px; }
-  .transport .slider { flex: 1 1 120px; min-width: 80px; }
-  .transport .speed-select { min-width: 56px; padding: 6px 4px; font-size: 12px; }
+  .transport .btn { flex: 1 1 auto; min-width: 70px; }
+  .transport .slider { min-width: 0; }
   .transport-sep { display: none; }
   .transport-label { display: none; }
 
