@@ -539,6 +539,14 @@ body {
 
   /* Hide the (now redundant) CodeView fallback completely on mobile. */
   #code { display: none !important; }
+
+  /* Mobile: hide Record / Search / Mark A-B Diff features (UI-only, logic kept) */
+  .rt-record-btn { display: none !important; }
+  #searchBar,
+  .searchbar-host { display: none !important; }
+  .mark-btn { display: none !important; }
+  #markChips,
+  .mark-chips { display: none !important; }
 }
 
 /* Touch-only devices: never show hover styling (would stick after tap). */

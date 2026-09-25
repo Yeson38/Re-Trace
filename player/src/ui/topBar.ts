@@ -124,6 +124,7 @@ export class TopBarWidget {
     this.recordBtn = this.mkBtn("▶ 录制", () => {
       this.handlers.onToggleRecord();
     });
+    this.recordBtn.classList.add("rt-record-btn");
     this.recordBtn.style.cssText +=
       "background:var(--accent,#4ea1ff);color:#fff;font-weight:600;border:none;";
     this.recordBtn.title = "录制/停止 (Ctrl+F5)";
