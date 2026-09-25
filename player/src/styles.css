@@ -415,8 +415,144 @@ body {
 }
 .transport-label { color: var(--text-faint); font-size: 11px; font-family: var(--mono); }
 
+/* =====================================================================
+   Mobile / touch adaptations (Plan A)
+   Target: narrow viewports (<= 760px) or touch-enabled devices.
+   - Touch targets >= 44px (Apple HIG / Material 48dp)
+   - :active feedback replaces :hover on touch
+   - Stage stacks to single column with tabbed inspector
+   - Top bar folds secondary controls into a drawer
+   ===================================================================== */
+
+/* Touch-target baseline: any interactive element gets a 44px min hit area.
+   We use padding + line-height rather than fixed height so text wraps fine. */
+.btn,
+.rt-btn {
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+.rt-btn { padding: 10px 14px; }
+
+/* Active (pressed) state for touch — replaces hover feedback. */
+.btn:active,
+.rt-btn:active,
+.loop-cpx:active,
+.complexity-pill:active,
+.mark-chip:active {
+  background: var(--bg) !important;
+  border-color: var(--accent) !important;
+  transform: translateY(1px);
+}
+
+/* Variable-tree expand rows need a bigger tap target. */
+.var-row { min-height: 28px; padding-top: 4px; padding-bottom: 4px; }
+.var-row.expandable { cursor: pointer; }
+
+/* Toast position: bottom-center on mobile to avoid safe-area issues. */
 @media (max-width: 760px) {
-  .stage { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .rt-toast-stack { left: 12px; right: 12px; bottom: 12px; }
+  .rt-toast { max-width: none; }
+}
+
+/* On desktop, hide the mobile-only inspector tab bar and show all panes. */
+.inspector-tabs { display: none; }
+.pane-block { display: flex; }
+
+/* Top bar: on narrow screens hide the secondary header row (counters + search)
+   behind a toggle. The toggle itself is rendered by main.ts into #topBar. */
+.rt-mobile-toggle {
+  display: none;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text-dim);
+  border-radius: 6px;
+  font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 760px) {
+  html, body { font-size: 15px; }
+  body { overflow: hidden; }
+
+  /* Hide the header row by default on mobile; toggle reveals it. */
+  .topbar { display: none; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .topbar.open { display: flex; }
+  .topbar .brand { width: 100%; }
+  .topbar-right { width: 100%; justify-content: flex-start; }
+  .counters { gap: 10px; font-size: 13px; }
+  .searchbar-host { max-width: none; flex: 1 1 100%; }
+  .rt-mobile-toggle { display: inline-flex; align-items: center; }
+
+  /* Stage: single column, code takes 2/3, inspector 1/3. Inspector uses tabs. */
+  .stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 2fr) minmax(0, 1fr);
+  }
+
+  /* Inspector tab bar (Variables / Loops / Terminal) */
+  .pane-inspector { position: relative; }
+  .inspector-tabs {
+    display: flex;
+    flex: 0 0 auto;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+  }
+  .inspector-tab {
+    flex: 1;
+    min-height: 40px;
+    padding: 0 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
+    font: 12px/1 var(--sans);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .inspector-tab.active {
+    color: var(--accent);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+  .inspector-tab:active { background: var(--bg-soft); }
+  .pane-block { display: none; }
+  .pane-block.active { display: flex; flex: 1 1 auto; min-height: 0; }
+  .pane-block.pane-terminal.active { display: flex; }
+
+  /* Transport: wrap to two rows — row1 = step buttons + slider, row2 = marks */
+  .transport {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .transport .btn { flex: 1 1 auto; min-width: 70px; }
+  .transport .slider { min-width: 0; }
+  .transport-sep { display: none; }
+  .transport-label { display: none; }
+
+  /* Monaco: smaller gutter, bigger touch area for line numbers */
+  .ln { flex: 0 0 36px; }
+
+  /* Hide the (now redundant) CodeView fallback completely on mobile. */
+  #code { display: none !important; }
+}
+
+/* Touch-only devices: never show hover styling (would stick after tap). */
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover,
+  .rt-btn:hover,
+  .complexity-pill:hover,
+  .mark-chip:hover,
+  .loop-cpx:hover,
+  .var-row.expandable:hover {
+    background: var(--bg-soft) !important;
+    border-color: var(--border) !important;
+    color: inherit !important;
+  }
 }
 
 /* ===== Phase 4 styles ===== */

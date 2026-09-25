@@ -40,24 +40,33 @@ export class MonacoEditorWidget {
     if (this.editor) return;
     this.monacoApi = await import("monaco-editor");
     const monaco = this.monacoApi;
+    const isMobile =
+      typeof window !== "undefined" &&
+      (window.matchMedia?.("(max-width: 760px)").matches ||
+        ("ontouchstart" in window && navigator.maxTouchPoints > 0));
     this.editor = monaco.editor.create(this.host, {
       value: "",
       language: "python",
       theme: "vs-dark",
       automaticLayout: true,
-      fontSize: 13,
+      fontSize: isMobile ? 15 : 13,
+      lineHeight: isMobile ? 24 : undefined,
       fontFamily: '"JetBrains Mono","Fira Code",Consolas,monospace',
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
       lineNumbers: "on",
-      glyphMargin: true,
+      glyphMargin: isMobile ? false : true,
       tabSize: 4,
       insertSpaces: true,
-      wordWrap: "off",
+      wordWrap: "on",
       smoothScrolling: true,
       cursorBlinking: "smooth",
       renderWhitespace: "selection",
       bracketPairColorization: { enabled: true },
+      // Mobile-friendly: hide context menu bits that are hard to tap
+      mobileLayout: isMobile ? "fixed" : "pratfall",
+      // Allow the on-screen keyboard to overlap without breaking layout
+      fixedOverflowWidgets: true,
     });
 
     // Track dirty state

@@ -37,15 +37,20 @@
       </section>
 
       <section class="pane pane-inspector" aria-label="Inspector">
-        <div class="pane-block">
+        <div class="inspector-tabs" role="tablist">
+          <button class="inspector-tab active" role="tab" data-tab="vars">Variables</button>
+          <button class="inspector-tab" role="tab" data-tab="loops">Loops</button>
+          <button class="inspector-tab" role="tab" data-tab="terminal">Output</button>
+        </div>
+        <div class="pane-block active" data-pane="vars">
           <div class="pane-title">Variables</div>
           <div class="tree" id="vars"></div>
         </div>
-        <div class="pane-block">
+        <div class="pane-block" data-pane="loops">
           <div class="pane-title">Loops</div>
           <div class="loops" id="loops"></div>
         </div>
-        <div class="pane-block pane-terminal">
+        <div class="pane-block pane-terminal" data-pane="terminal">
           <div class="pane-title">Output</div>
           <pre class="terminal" id="terminal" aria-live="polite"></pre>
         </div>

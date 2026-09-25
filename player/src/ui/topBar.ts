@@ -39,6 +39,18 @@ export class TopBarWidget {
       font:13px/1.4 var(--sans,sans-serif);
     `;
 
+    // Mobile toggle: reveals the secondary header row (counters + search).
+    // Only visible on narrow screens (CSS handles display).
+    const toggle = document.createElement("button");
+    toggle.className = "rt-mobile-toggle";
+    toggle.textContent = "≡";
+    toggle.title = "显示/隐藏状态与搜索";
+    toggle.addEventListener("click", () => {
+      const header = document.querySelector("header.topbar") as HTMLElement | null;
+      header?.classList.toggle("open");
+    });
+    this.host.appendChild(toggle);
+
     // New button
     const newBtn = this.mkBtn("新建", () => {
       this.handlers.onNew(this.currentLang);

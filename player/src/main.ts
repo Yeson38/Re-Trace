@@ -58,6 +58,19 @@ async function main(): Promise<void> {
   const varTree = new VarTree(el("vars"));
   const terminal = new Terminal(el("terminal"));
 
+  // --- Mobile: inspector tab switching (Variables / Loops / Terminal) ---
+  const inspectorTabs = document.querySelectorAll<HTMLButtonElement>(".inspector-tab");
+  const inspectorPanes = document.querySelectorAll<HTMLElement>(".pane-inspector .pane-block");
+  inspectorTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.tab;
+      inspectorTabs.forEach((t) => t.classList.toggle("active", t === tab));
+      inspectorPanes.forEach((p) =>
+        p.classList.toggle("active", p.dataset.pane === target)
+      );
+    });
+  });
+
   // Diff anchors tracked by the main glue.
   let markA: number | null = null;
   let markB: number | null = null;
