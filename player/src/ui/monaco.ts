@@ -44,7 +44,7 @@ export class MonacoEditorWidget {
       typeof window !== "undefined" &&
       (window.matchMedia?.("(max-width: 760px)").matches ||
         ("ontouchstart" in window && navigator.maxTouchPoints > 0));
-    this.editor = monaco.editor.create(this.host, {
+    const editorOptions = {
       value: "",
       language: "python",
       theme: "vs-dark",
@@ -63,11 +63,15 @@ export class MonacoEditorWidget {
       cursorBlinking: "smooth",
       renderWhitespace: "selection",
       bracketPairColorization: { enabled: true },
-      // Mobile-friendly: hide context menu bits that are hard to tap
-      mobileLayout: isMobile ? "fixed" : "pratfall",
       // Allow the on-screen keyboard to overlap without breaking layout
       fixedOverflowWidgets: true,
-    });
+    } as Monaco.editor.IStandaloneEditorConstructionOptions;
+    // `mobileLayout` is supported at runtime but not in older Monaco type
+    // definitions, so set it after construction to keep typecheck clean.
+    this.editor = monaco.editor.create(this.host, editorOptions);
+    if (isMobile) {
+      this.editor.updateOptions({ mobileLayout: "fixed" } as Monaco.editor.IEditorOptions);
+    }
 
     // Track dirty state
     this.editor.onDidChangeModelContent(() => {
